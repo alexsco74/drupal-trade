@@ -1,0 +1,5 @@
+name = Custom functional
+description = Custom block with settings for admin & e.t.
+package = Custom
+version = VERSION
+core = 7.x

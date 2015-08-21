@@ -1,0 +1,5 @@
+name = Custom better form elements
+description = Add attributes for select & checkboxes e.t.
+package = Custom
+version = VERSION
+core = 7.x

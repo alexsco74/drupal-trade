@@ -1,0 +1,82 @@
+.trade-product-color-picker-option-thumb-image img {
+    border: 4px solid #fff;
+    -webkit-border-radius: 25px;
+    -moz-border-radius: 25px;
+    -ms-border-radius: 25px;
+    -o-border-radius: 25px;
+    border-radius: 25px;
+}
+
+.trade-product-color-picker-option-thumb-image.trade-view-mode-mini img,
+.node-teaser .trade-product-option-color-viewer .trade-product-color-picker-option-thumb-image img {
+    border: 2px solid #fff;
+    border-radius: 4px;
+    height: 17px;
+    width: 17px;
+}
+
+.form-item.form-type-radio input.form-radio:checked + label .trade-product-color-picker-option-thumb-image img {
+    border: 4px solid #ffd500;
+}
+
+.form-item.form-type-radio input.form-radio:checked + label .trade-product-color-picker-option-thumb-image.trade-view-mode-mini img,
+.node-teaser .trade-product-option-color-viewer .form-item.form-type-radio input.form-radio:checked + label .trade-product-color-picker-option-thumb-image img {
+    border: 2px solid #ffd500;
+}
+
+.node-teaser .trade-product-option-color-viewer .trade-product-color-picker-option-thumb-title {
+    /* display: none; */
+}
+
+.trade-product-option-color-picker input.form-radio {
+    display: none;
+}
+
+.trade-product-color-picker-option-preview-wr-text {
+    background-color: #fce708;
+}
+
+.ui-tooltip.trade-product-color-picker {
+    padding: 3px;
+    position: absolute;
+    z-index: 9999;
+    -o-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    -ms-border-radius: 12px;
+    -o-border-radius: 12px;
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0;
+}
+
+.ui-tooltip-content .trade-product-color-picker {
+    margin: 0;
+}
+
+.trade-product-option-color-picker .form-item-field-product-color {
+    display: inline-block;
+    text-align: center;
+    padding-right: .5em;
+    max-width: 90px;
+    vertical-align: top;
+}
+
+.trade-product-option-color-picker .form-item.form-type-radio input.form-radio + label {
+    padding-left: 0 !important;
+    background: none !important;
+}
+
+.trade-product-option-color-picker .form-item.form-type-radio input.form-radio:checked + label {
+    padding-left: 0 !important;
+    background: none !important;
+}
+
+.trade-product-color-picker-option-preview-wr-image, .trade-product-color-picker-option-preview-wr-text {
+    display: block;
+}

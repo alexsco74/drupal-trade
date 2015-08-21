@@ -1,0 +1,1046 @@
+# $Id$
+#
+# Russian translation of Drupal (general)
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+# Generated from files:
+#  trade.admin.inc: n/a
+#  trade_order.pages.inc: n/a
+#  modules/trade_catalog/trade_catalog.admin.inc: n/a
+#  trade.module: n/a
+#  trade.rules.inc: n/a
+#  trade.info: n/a
+#  trade.tokens.inc: n/a
+#  modules/trade_catalog/trade_catalog.pages.inc: n/a
+#  modules/trade_catalog/trade_catalog.info: n/a
+#  modules/trade_catalog/trade_catalog.module: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: trade .2\n"
+"POT-Creation-Date: 2015-03-18 18:37+0300\n"
+"PO-Revision-Date: 2015-03-18 18:51+0300\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Russian <vasili@pinchuk.biz>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 1.7.5\n"
+"Language: ru\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: trade.admin.inc:14;20 trade_order.pages.inc:1349
+msgid "Currency"
+msgstr "Валюта"
+
+#: trade.admin.inc:25
+msgid "Currencies"
+msgstr "Валюты"
+
+#: trade.admin.inc:27
+msgid "Abbr|suffix|unicode"
+msgstr "Аббревиатура | суффикс | Unicode"
+
+#: trade.admin.inc:32
+msgid "Use currency"
+msgstr "Использовать валюту"
+
+#: trade.admin.inc:39
+msgid "Debug mode"
+msgstr "Режим отладки"
+
+#: trade.admin.inc:46
+msgid "Format number"
+msgstr "Формат номера"
+
+#: trade.admin.inc:51
+msgid "Separator"
+msgstr "Разделитель"
+
+#: trade.admin.inc:54
+msgid "Not use"
+msgstr "Не использовать"
+
+#: trade.admin.inc:63
+msgid "Product types"
+msgstr "Тип товара"
+
+#: trade.admin.inc:68 modules/trade_catalog/trade_catalog.admin.inc:35
+msgid "Product node types"
+msgstr "Тип материала для товара"
+
+#: trade.admin.inc:76
+msgid "Sales process"
+msgstr "Процесс покупки"
+
+#: trade.admin.inc:81
+msgid "After add product to cart, goto front page"
+msgstr "После добавления товар в корзину перейти на главную страницу."
+
+#: trade.admin.inc:105
+msgid "Product trade options field"
+msgstr "Поле опций товара"
+
+#: trade.admin.inc:124
+msgid "Product trade upholstery options field"
+msgstr "Поле опций обивки товара"
+
+#: trade.admin.inc:131
+msgid "Product trade fabricator field"
+msgstr "Поле производителя товара"
+
+#: trade.admin.inc:133;142;160
+msgid "None"
+msgstr "Нет"
+
+#: trade.admin.inc:140
+msgid "Product trade color picker field"
+msgstr "Поле выбора цвета"
+
+#: trade.admin.inc:158
+msgid "Product trade upholstery collection field"
+msgstr ""
+
+#: trade.admin.inc:178 trade.module:968
+msgid "Service"
+msgstr "Услуга"
+
+#: trade.admin.inc:184 trade_order.pages.inc:230 trade.module:973;1952
+msgid "Shipping"
+msgstr "Доставка"
+
+#: trade.admin.inc:185
+msgid "Product default value"
+msgstr "Значения по умолчанию товара"
+
+#: trade.admin.inc:189 trade_order.pages.inc:43 trade.module:977
+msgid "On city (amount)"
+msgstr "По городу"
+
+#: trade.admin.inc:193;202 trade.module:982;992
+msgid "0 - free"
+msgstr "0 - бесплатно"
+
+#: trade.admin.inc:198
+msgid "From city (price 1 km)"
+msgstr "За город (за 1 км)"
+
+#: trade.admin.inc:208 trade_order.pages.inc:415 trade.module:999
+msgid "Lifting"
+msgstr "Подьем"
+
+#: trade.admin.inc:213 trade.module:1003;1893
+msgid "Lift"
+msgstr "Лифт"
+
+#: trade.admin.inc:215;236 trade.module:1005;1028
+msgid "With out lifting"
+msgstr "Без подьема"
+
+#: trade.admin.inc:216;237 trade.module:1006;1029;1058;1881;1902;1925
+msgid "Free"
+msgstr "Бесплатно"
+
+#: trade.admin.inc:217;225 trade.module:1007;1016
+msgid "Fixed amount"
+msgstr "Фиксированная сумма"
+
+#: trade.admin.inc:218 trade.module:1008;1889
+msgid "3%, not less 200 rub."
+msgstr "3%, не менее 200 руб."
+
+#: trade.admin.inc:234 trade.module:1026;1914
+msgid "On stairs"
+msgstr "По лестнице"
+
+#: trade.admin.inc:238;246 trade.module:1030
+msgid "Fix price on floor"
+msgstr "Фиксированная цена за этаж"
+
+#: trade.admin.inc:239 trade.module:1031
+msgid "3%, not less 250 rub. on floor"
+msgstr "3%, не менее 250 руб за этаж"
+
+#: trade.admin.inc:256 trade_order.pages.inc:51;529
+#: trade.module:1051;1055;1958
+msgid "Assembly"
+msgstr "Сборка"
+
+#: trade.admin.inc:261
+msgid "Assembly type"
+msgstr "Тип сборки"
+
+#: trade.admin.inc:263
+msgid "With out assembly"
+msgstr "Без сборки"
+
+#: trade.admin.inc:264;272 trade_order.pages.inc:576;619;1348;1478
+#: trade.module:1059;1069
+msgid "Amount"
+msgstr "Сумма"
+
+#: trade.admin.inc:265 trade.module:1060;1933
+msgid "15%, not less 500 rub."
+msgstr "15%, не менее 500 руб."
+
+#: trade.admin.inc:266 trade.module:1061;1936
+msgid "10%, not less 700 rub."
+msgstr "10%, не менее 700 руб."
+
+#: trade.admin.inc:287
+msgid "Product teaser trade cache enable"
+msgstr "Включить кэш анонсов для товаров"
+
+#: trade.admin.inc:297
+msgid "Product trade upholstery picker cache enable"
+msgstr ""
+
+#: trade.admin.inc:302
+msgid "Product trade upholstery picker full ajax callback use"
+msgstr ""
+
+#: trade.admin.inc:312
+msgid "Total product count - @count"
+msgstr "Всего товаров - @count"
+
+#: trade.admin.inc:317
+msgid "Re-create cache"
+msgstr "Пересоздать кэш"
+
+#: trade.rules.inc:14
+msgid "After create order"
+msgstr "После создания заказа"
+
+#: trade.rules.inc:15;22;29
+#: trade.module:633;640;645;650;661;667;673;678;813;556;565 trade.info:0;0
+msgid "Trade"
+msgstr "Торговля"
+
+#: trade.rules.inc:17;24;31
+msgid "The trade order"
+msgstr "Торговля, заказ"
+
+#: trade.rules.inc:21 trade.module:4407
+msgid "After update order"
+msgstr "После обновления заказа"
+
+#: trade.rules.inc:28 trade.module:4410
+msgid "After delete order"
+msgstr "После удаления заказа"
+
+#: trade.tokens.inc:14
+msgid "Trade orders"
+msgstr "Торговля, заказы"
+
+#: trade.tokens.inc:15
+msgid "Tokens related to individual content items, or \"orders\"."
+msgstr "Маркер, связанный с содержимым или \"заказы\"."
+
+#: trade.tokens.inc:21
+msgid "Order ID"
+msgstr "Номер заказа"
+
+#: trade.tokens.inc:22
+msgid "The unique ID of the order."
+msgstr "Уникальный ID заказа."
+
+#: trade.tokens.inc:25 trade_order.pages.inc:1350
+msgid "Name"
+msgstr "Имя"
+
+#: trade.tokens.inc:26
+msgid "Client name from order."
+msgstr "Имя клиента для заказа"
+
+#: trade.tokens.inc:29 trade_order.pages.inc:926;1261;1352
+msgid "Phone"
+msgstr "Телефон"
+
+#: trade.tokens.inc:30
+msgid "Client phone from order"
+msgstr "Телефон клиента для заказа"
+
+#: trade.tokens.inc:33
+msgid "Mail"
+msgstr "Почта"
+
+#: trade.tokens.inc:34
+msgid "Client mail from order"
+msgstr "Email клиента для заказа"
+
+#: trade.tokens.inc:37
+msgid "Address"
+msgstr "Адрес"
+
+#: trade.tokens.inc:38
+msgid "The client address from order."
+msgstr "Адрес клиента для заказа."
+
+#: trade.tokens.inc:41
+msgid "Comment"
+msgstr "Комментарий"
+
+#: trade.tokens.inc:42
+msgid "The client comment from order."
+msgstr "Комментарий клиента для заказа"
+
+#: trade.tokens.inc:45
+msgid "URL"
+msgstr "URL"
+
+#: trade.tokens.inc:46
+msgid "The URL of the order."
+msgstr "URL адрес заказа."
+
+#: trade.tokens.inc:50 trade_order.pages.inc:823;1214
+msgid "Date created"
+msgstr "Дата создания"
+
+#: trade.tokens.inc:51
+msgid "The date the order was posted (ISO)."
+msgstr "Дата отправки заказа (ISO)."
+
+#: trade.tokens.inc:55
+msgid "Date changed"
+msgstr "Дата изменена"
+
+#: trade.tokens.inc:56
+msgid "The date the order was most recently updated (ISO)."
+msgstr "Дата, когда заказ был обновлен (ISO)."
+
+#: trade_order.pages.inc:10
+msgid "Edit order #@id"
+msgstr "Редактировать заказ #@id"
+
+#: trade_order.pages.inc:44 trade.module:1869
+msgid "From city"
+msgstr "За городом"
+
+#: trade_order.pages.inc:47
+msgid "On lift"
+msgstr "На лифте"
+
+#: trade_order.pages.inc:48
+msgid "Without lift"
+msgstr "Без подьема"
+
+#: trade_order.pages.inc:55
+msgid "Without shipping"
+msgstr "Без доставки"
+
+#: trade_order.pages.inc:58
+msgid "Without lifting"
+msgstr "Без подьема"
+
+#: trade_order.pages.inc:61
+msgid "Without assembly"
+msgstr "Без сборки"
+
+#: trade_order.pages.inc:93;119;279;305;463;489
+msgid "Type"
+msgstr "Тип"
+
+#: trade_order.pages.inc:159;344;613 trade.module:818;906
+#: modules/trade_catalog/trade_catalog.admin.inc:96
+#: modules/trade_catalog/trade_catalog.pages.inc:220;1057
+msgid "Price"
+msgstr "Цена"
+
+#: trade_order.pages.inc:179;207
+msgid "Distance (km)"
+msgstr "Расстояние (км)"
+
+#: trade_order.pages.inc:364;392
+msgid "Floor"
+msgstr "Этаж"
+
+#: trade_order.pages.inc:556
+msgid "Services"
+msgstr "Услуги"
+
+#: trade_order.pages.inc:557;744
+msgid "Total"
+msgstr "Всего"
+
+#: trade_order.pages.inc:573
+msgid "Service name"
+msgstr "Название услуги"
+
+#: trade_order.pages.inc:611
+msgid "SKU"
+msgstr "Артикул"
+
+#: trade_order.pages.inc:612
+msgid "Products name"
+msgstr "Наименование товара"
+
+#: trade_order.pages.inc:615
+msgid "Qty"
+msgstr "Количество"
+
+#: trade_order.pages.inc:630;989;1005;1071
+msgid "Delete"
+msgstr "Удалить"
+
+#: trade_order.pages.inc:770
+msgid "Products"
+msgstr "Товары"
+
+#: trade_order.pages.inc:778
+msgid "Product not choiced"
+msgstr "Товар не выбран"
+
+#: trade_order.pages.inc:856;1241
+msgid "Total amount"
+msgstr "Общая сумма"
+
+#: trade_order.pages.inc:874
+msgid "You cart is empty. You can !choice product."
+msgstr "Ваша корзина пуста. Вы можете !choice товары."
+
+#: trade_order.pages.inc:874
+msgid "choice"
+msgstr "выбрать"
+
+#: trade_order.pages.inc:910;1260
+msgid "Full name"
+msgstr "Полное имя"
+
+#: trade_order.pages.inc:931;1262;1351
+msgid "E-mail"
+msgstr "E-mail"
+
+#: trade_order.pages.inc:952;1287
+msgid "Address of house"
+msgstr "Адрес дома"
+
+#: trade_order.pages.inc:965;1300
+msgid "Address details"
+msgstr "Полный адрес"
+
+#: trade_order.pages.inc:972;1069
+msgid "Make order"
+msgstr "Сделать заказ"
+
+#: trade_order.pages.inc:980;1070
+msgid "Save"
+msgstr "Сохранить"
+
+#: trade_order.pages.inc:1080
+msgid "Thanks, order is complete."
+msgstr "Спасибо, заказ офомлен."
+
+#: trade_order.pages.inc:1091
+msgid "Order saved."
+msgstr "Заказ сохранен."
+
+#: trade_order.pages.inc:1101
+msgid "Order #@num deleted."
+msgstr "Заказ #@num удален."
+
+#: trade_order.pages.inc:1119
+msgid "E-mail notify not sent."
+msgstr "E-mail уведомление не отправлено."
+
+#: trade_order.pages.inc:1122
+msgid "Notify sent on e-mail."
+msgstr "Уведомление отпавлено на e-mail."
+
+#: trade_order.pages.inc:1198 trade.module:378
+msgid "Order #@id"
+msgstr "Заказ  #@id"
+
+#: trade_order.pages.inc:1311
+msgid "Contact info"
+msgstr "Контактная информация"
+
+#: trade_order.pages.inc:1345
+msgid "#"
+msgstr ""
+
+#: trade_order.pages.inc:1346
+msgid "Date"
+msgstr "Дата"
+
+#: trade_order.pages.inc:1347;1473
+msgid "Quantity"
+msgstr "Кол-во"
+
+#: trade_order.pages.inc:1353
+msgid "Operations"
+msgstr "Действия"
+
+#: trade_order.pages.inc:1380 trade.module:513
+msgid "View"
+msgstr "Просмотр"
+
+#: trade_order.pages.inc:1383 trade.module:519
+#: modules/trade_catalog/trade_catalog.pages.inc:131;159
+msgid "Edit"
+msgstr "Правка"
+
+#: trade_order.pages.inc:1412
+msgid "Orders not found."
+msgstr "Заказы не найдены."
+
+#: trade_order.pages.inc:1465
+msgid "Cart empty"
+msgstr "Корзина пустая"
+
+#: trade.module:54
+msgid "Collection elements"
+msgstr "Элементы коллекции"
+
+#: trade.module:151
+msgid "Cart (trade)"
+msgstr "Корзина (торговля)"
+
+#: trade.module:155
+msgid "Product images gallery (trade)"
+msgstr "Галерея изображений товаров (торговля)"
+
+#: trade.module:172
+msgid "Preview image style"
+msgstr "Стиль изображения при предпросмотре"
+
+#: trade.module:178
+msgid "Thumbnail image style"
+msgstr "Стиль изображения при предпросмотре"
+
+#: trade.module:352
+msgid "View all orders"
+msgstr "Просмотр всех заказов"
+
+#: trade.module:355
+msgid "View own orders"
+msgstr "Просмотр своих заказов"
+
+#: trade.module:358
+msgid "Edit all orders"
+msgstr "Редактировать все заказы"
+
+#: trade.module:361
+msgid "Edit own orders"
+msgstr "Редактировать свои заказы"
+
+#: trade.module:364
+msgid "Delete all orders"
+msgstr "Удалить все заказы"
+
+#: trade.module:367
+msgid "Delete own orders"
+msgstr "Удалить свои заказы"
+
+#: trade.module:370
+msgid "Notify about create orders"
+msgstr "Уведомлять о создании заказов"
+
+#: trade.module:632
+msgid "Product settings"
+msgstr "Настройки товаров"
+
+#: trade.module:639;3669
+msgid "Product gallery (trade)"
+msgstr "Галерея товаров (торговля)"
+
+#: trade.module:644
+msgid "Product price (trade)"
+msgstr "Цены товара (торговля)"
+
+#: trade.module:649
+msgid "Product dimensions (trade)"
+msgstr "Размеры товара (торговля)"
+
+#: trade.module:654
+msgid "Product service (trade)"
+msgstr ""
+
+#: trade.module:655
+msgid "Trade product service"
+msgstr ""
+
+#: trade.module:659
+msgid "Product option color picker (trade)"
+msgstr ""
+
+#: trade.module:660;666;1732
+msgid "Enabled colors"
+msgstr "Доступные цвета"
+
+#: trade.module:665
+msgid "Product option color viewer (trade)"
+msgstr ""
+
+#: trade.module:671
+msgid "Product option upholstery picker (trade)"
+msgstr ""
+
+#: trade.module:672
+msgid "Upholstery picker"
+msgstr "Выбор обивки"
+
+#: trade.module:677
+msgid "Product add to order (trade)"
+msgstr "Товар добавить к заказу (торговля)"
+
+#: trade.module:836
+msgid "Option"
+msgstr "Опция"
+
+#: trade.module:873
+msgid "Upholstery category"
+msgstr "Категории обивки"
+
+#: trade.module:898
+msgid "Please, enter fabricator and save node for edit this upholstery category option  prices."
+msgstr "Пожалуйста, выберите производителя и сохраните материал, чтобы отредактировать опции и цены."
+
+#: trade.module:906
+msgid "title"
+msgstr "Название"
+
+#: trade.module:906
+msgid "Use"
+msgstr "Использовать"
+
+#: trade.module:948
+msgid "Sorry, option variants not found, may be create or add terms ?!"
+msgstr "Извините, варианты опций не найдены. Попробуйте создать или добавить термины в словарь"
+
+#: trade.module:987
+msgid "From price_on_distance (price 1 km)"
+msgstr "За город (цена 1 км)"
+
+#: trade.module:1039
+msgid "Price on floor"
+msgstr "Цена за этаэ"
+
+#: trade.module:1057
+msgid "Witout assembly"
+msgstr "Без сборки"
+
+#: trade.module:1707
+msgid "Сolor"
+msgstr "Цвет"
+
+#: trade.module:1773
+msgid "!label"
+msgstr ""
+
+#: trade.module:1853;1865
+msgid "free"
+msgstr "бесплатно"
+
+#: trade.module:1857
+msgid "On city"
+msgstr "В городе"
+
+#: trade.module:1910
+msgid "3%, not less 250 rub."
+msgstr "3%, не менее 250 руб."
+
+#: trade.module:1955
+msgid "lifting"
+msgstr "подьем"
+
+#: trade.module:2007;2010
+msgid "Dimensions"
+msgstr "Размеры"
+
+#: trade.module:2038
+msgid "Choice another upholstery"
+msgstr "Выбор другой обивки"
+
+#: trade.module:2145
+msgid "trade product option upholstery picker"
+msgstr ""
+
+#: trade.module:2436
+msgid "Loading"
+msgstr "Загрузка"
+
+#: trade.module:2627
+msgid "-Any-"
+msgstr "-Любой-"
+
+#: trade.module:2670
+msgid "Thank, product add to cart. !checkout"
+msgstr "Спасибо, товар добавлен к корзине. !checkout"
+
+#: trade.module:2670
+msgid "Checkout order"
+msgstr "Оформить заказ"
+
+#: trade.module:2678
+msgid "Sorry, try again later."
+msgstr "Извините, попробуйте позже."
+
+#: trade.module:3497
+msgid "Buy"
+msgstr "Купить"
+
+#: trade.module:3652
+msgid "Checked"
+msgstr "Выбрано"
+
+#: trade.module:3656
+msgid "Plain text as link content"
+msgstr "Ссылка на материал"
+
+#: trade.module:3660
+msgid "Trade option picker"
+msgstr "Торговля варианты выбора"
+
+#: trade.module:3664
+msgid "Image first (trade)"
+msgstr "Вначале изображение (торговля)"
+
+#: trade.module:3674
+msgid "Rendered entity (trade)"
+msgstr ""
+
+#: trade.module:3675
+msgid "Display the referenced entities rendered by entity_view() and masonry."
+msgstr ""
+
+#: trade.module:3704
+msgid "Image preview style"
+msgstr "Стиль превью изображения"
+
+#: trade.module:3710
+msgid "Image thumbnail style"
+msgstr "Стиль миниатюр изображения"
+
+#: trade.module:3716;3738
+msgid "Link image to"
+msgstr "Изображение как ссылка на"
+
+#: trade.module:3726
+msgid "Image style"
+msgstr "Стиль изображения"
+
+#: trade.module:3729
+msgid "None (original image)"
+msgstr "Нет (оригинальное изображение)"
+
+#: trade.module:3734
+msgid "Content"
+msgstr "Содержимое"
+
+#: trade.module:3735
+msgid "File"
+msgstr "Файл"
+
+#: trade.module:3741
+msgid "Nothing"
+msgstr "Ничего"
+
+#: trade.module:3748;3821
+msgid "Default"
+msgstr "По умолчанию"
+
+#: trade.module:3757
+msgid "View mode"
+msgstr "Режим просмотра"
+
+#: trade.module:3763
+msgid "Show links"
+msgstr "Показать ссылки"
+
+#: trade.module:3790
+msgid "Image preview style: @style"
+msgstr "Стиль превью изображения: @style"
+
+#: trade.module:3791
+msgid "Image thumbnail style: @style"
+msgstr "Стиль миниатюры изображения: @style"
+
+#: trade.module:3792
+msgid "Image navigator count: @count"
+msgstr ""
+
+#: trade.module:3803
+msgid "Image style: @style"
+msgstr "Стиль изображения: @style"
+
+#: trade.module:3806
+msgid "Original image"
+msgstr "Оригинальное изображение"
+
+#: trade.module:3809
+msgid "Linked to content"
+msgstr "Ссылка на контент"
+
+#: trade.module:3810
+msgid "Linked to file"
+msgstr "Ссылка на файл"
+
+#: trade.module:3825
+msgid "Rendered as @mode"
+msgstr ""
+
+#: trade.module:3826
+msgid "Display links"
+msgstr "Отображать ссылки"
+
+#: trade.module:3826
+msgid "Do not display links"
+msgstr "Не показывать ссылки"
+
+#: trade.module:3951
+msgid "Recursive rendering detected when rendering entity @entity_type(@entity_id). Aborting rendering."
+msgstr ""
+
+#: trade.module:4216
+msgid "Thank you for your order."
+msgstr "Спасибо за ваш заказ."
+
+#: trade.module:4217
+msgid "You will be contacted shortly."
+msgstr "Мы свяжемся с вами в ближайшее время."
+
+#: trade.module:4218
+msgid "Please do not reply to this email."
+msgstr "Пожалуйста не отвечайте на это письмо."
+
+#: trade.module:4223
+msgid "Order #!num"
+msgstr "Заказr #!num"
+
+#: trade.module:4303
+msgid "Loading node \"@title\""
+msgstr "Загрузка материала \"@title\""
+
+#: trade.module:4319
+msgid "@count results processed in @requests HTTP requests."
+msgstr ""
+
+#: trade.module:4323
+msgid "The final result was \"%final\""
+msgstr ""
+
+#: trade.module:4330
+msgid "An error occurred while processing @operation with arguments : @args"
+msgstr "Возникла ошибка в процессе @operation с аргументами: @args"
+
+#: trade.module:4355
+msgid "(Product #@operation)"
+msgstr "(Товар #@operation)"
+
+#: trade.module:4404
+msgid "After create new order"
+msgstr "После создания нового заказа"
+
+#: trade.module:46;49;4424;4428;4432
+msgid "trade"
+msgstr "торговля"
+
+#: trade.module:46
+msgid "Error create new @file"
+msgstr "Ошибка создания @file"
+
+#: trade.module:49
+msgid "Auto patch @file executed"
+msgstr ""
+
+#: trade.module:4424
+msgid "Trade order #@num was created"
+msgstr "Торговля заказ #@num был создан"
+
+#: trade.module:4428
+msgid "Trade order #@num updated"
+msgstr "Торговля заказ #@num был обновлен"
+
+#: trade.module:4432
+msgid "Trade order #@num was deleted"
+msgstr "Торговля заказ #@num был удален"
+
+#: trade.module:4347
+msgid "Cache 1 product"
+msgid_plural "Cache @count products"
+msgstr[0] "Кэшировать @count товар"
+msgstr[1] "Кэшировать @count товара"
+msgstr[2] "Кэшировать @count товаров"
+
+#: trade.module:479
+msgid "Orders (all)"
+msgstr "Заказы (все)"
+
+#: trade.module:487
+msgid "Orders"
+msgstr "Заказы"
+
+#: trade.module:495
+msgid "Cart"
+msgstr "Корзина"
+
+#: trade.module:557;566
+msgid "Trade config"
+msgstr "Конфигурация торговли"
+
+#: trade.module:574;575
+msgid "Trade product"
+msgstr "Торговля товары"
+
+#: trade.module:585;586
+msgid "Trade cache"
+msgstr "Торговля кэш"
+
+#: trade.info:0 modules/trade_catalog/trade_catalog.info:0
+msgid "Custom"
+msgstr "Пользовательский"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:24
+msgid "Product catalog field"
+msgstr "Поле для каталога товаров"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:50
+msgid "Commerce product field"
+msgstr ""
+
+#: modules/trade_catalog/trade_catalog.admin.inc:63
+msgid "Commerce product price field"
+msgstr ""
+
+#: modules/trade_catalog/trade_catalog.admin.inc:83
+msgid "Catalog filter fields"
+msgstr "Поле фильтра каталога"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:90
+msgid "Count nodes on page"
+msgstr "Количество материалов на странице"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:99
+#: modules/trade_catalog/trade_catalog.pages.inc:224
+msgid "Popularity"
+msgstr "Популярность"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:103
+msgid "Product catalog sort param"
+msgstr "Параметры сортировки товаров в каталоге"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:109
+msgid "Product catalog sort direction"
+msgstr "Направление сортировки товаров в каталоге"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:111
+msgid "Desc"
+msgstr "По убыванию"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:111
+msgid "Asc"
+msgstr "По возрастанию"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:117
+msgid "Product data ajax wrapper selector"
+msgstr ""
+
+#: modules/trade_catalog/trade_catalog.admin.inc:119
+msgid "Another selector for ajax load on sort link click"
+msgstr ""
+
+#: modules/trade_catalog/trade_catalog.admin.inc:134
+msgid "Rewrite taxonomy term theme"
+msgstr "Переопределить страницу термина словаря"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:140
+msgid "Catalog page tree terms block enable"
+msgstr "Включен блок дерева каталога"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:151
+msgid "Catalog tree term view mode"
+msgstr "Режим просмотра дерева каталога"
+
+#: modules/trade_catalog/trade_catalog.admin.inc:161
+msgid "Enable masonry on catalog pages"
+msgstr "Включить masonry на страницах каталога"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:62
+msgid "Catalog vocabulary not found. Please check you config on page - admin/config/trade/catalog"
+msgstr "Словарь каталога не найден. Пожалуйста, выберите его на странице - admin/config/trade/catalog"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:109;174
+msgid "Home"
+msgstr "Главная"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:312
+msgid "Sort unde"
+msgstr "Сортировать по"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:339
+msgid "Product not found. Please, change or clear filers."
+msgstr "Товары не найдены. Пожалуйста, измените критерии отбора."
+
+#: modules/trade_catalog/trade_catalog.pages.inc:366
+msgid "Input search string"
+msgstr "Строка поиска"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:374
+msgid "Search"
+msgstr "Поиск"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:485
+msgid "Show: @count"
+msgstr "Показать: @count"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:491
+msgid "Remove: @count"
+msgstr "Удалено: @count"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:1087;1093;1263
+msgid "From"
+msgstr "От"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:1088;1094;1264
+msgid "Unto"
+msgstr "До"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:1340
+msgid "year"
+msgstr "год"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:1433
+msgid "Apply"
+msgstr "Применить"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:1437
+#: modules/trade_catalog/trade_catalog.module:50
+msgid "Clear"
+msgstr "Убрать"
+
+#: modules/trade_catalog/trade_catalog.pages.inc:1494
+msgid "All list"
+msgstr ""
+
+#: modules/trade_catalog/trade_catalog.module:258
+msgid "turn up"
+msgstr "открыть"
+
+#: modules/trade_catalog/trade_catalog.module:258
+msgid "shut up"
+msgstr "закрыть"
+
+#: modules/trade_catalog/trade_catalog.module:421
+msgid "Catalog filters (trade)"
+msgstr ""
+
+#: modules/trade_catalog/trade_catalog.module:425
+msgid "Catalog terms (trade)"
+msgstr ""
+
+#: modules/trade_catalog/trade_catalog.module:429
+msgid "Catalog search (trade)"
+msgstr ""
+
+#: modules/trade_catalog/trade_catalog.module:443
+msgid "Search on catalog"
+msgstr "Поиск по каталогу"
+
+#: modules/trade_catalog/trade_catalog.module:101
+msgid "Catalog"
+msgstr "Каталог товаров"
+
+#: modules/trade_catalog/trade_catalog.module:108;109
+#: modules/trade_catalog/trade_catalog.info:0;0
+msgid "Trade catalog"
+msgstr "Каталог товаров"

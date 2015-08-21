@@ -1,0 +1,15 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the trade_yml_export module.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function trade_yml_export_uninstall() {
+    db_delete('variable')
+      ->condition('name', 'trade_yml_export_%', 'LIKE')
+      ->execute();
+}

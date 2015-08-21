@@ -1,0 +1,464 @@
+<?php
+define('SOCIAL_LIKES_MIN_PLUGIN_VERSION', '2.0.12');
+define('SOCIAL_LIKES_ADD_META_TAG_ENABLED', FALSE);
+
+/**
+ * Implements hook_libraries_info().
+ */
+function social_likes_libraries_info() {
+  $libraries['social_likes'] = array(
+    'name' => 'Social likes plugin',
+    'vendor url' => 'https://github.com/sapegin/social-likes',
+    'download url' => 'https://github.com/sapegin/social-likes',
+    'version arguments' => array(
+      'file' => 'social-likes.min.js',
+      'pattern' => '@Social Likes v([0-9\.a-z]+)@',
+      'lines' => 5,
+    ),
+    'files' => array(
+      'js' => array(
+        'social-likes.min.js',
+      ),
+      'css' => array(
+        'social-likes.css',
+      ),
+    ),
+    'variants' => array(
+      'minified' => array(
+        'files' => array(
+          'js' => array(
+            'social-likes.min.js',
+          ),
+          'css' => array(
+            'social-likes.css',
+          ),
+        ),
+      ),
+    ),
+  );
+  return $libraries;
+}
+
+/**
+ * Implements of hook_field_info().
+ */
+function social_likes_field_info() {
+  return array(
+    'social_likes' => array(
+      'label' => t('Social likes'),
+      'description' => t('Store a social likes difinition for this piece of content.'),
+      'default_widget' => 'social_likes_exposed',
+      'default_formatter' => 'social_likes_formatter_default',
+      'instance_settings' => array(
+        'init' => TRUE,
+        'layouts' => array(),
+        'addons_settings' => array(),
+      )
+    ),
+  );
+}
+
+/**
+ * Implements of hook_field_widget_info().
+ */
+function social_likes_field_widget_info() {
+  return array(
+    'social_likes_exposed' => array(
+      'label' => t('Social likes (exposed)'),
+      'field types' => array('social_likes'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_prepare_view().
+ *
+ * Must populate items, for force rendering the output.
+ */
+function social_likes_field_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items) {
+  foreach ($entities as $id => $entity) {
+    if (empty($items[$id])) {
+      $items[$id] = array(0);
+    }
+  }
+}
+
+/**
+ * Implements hook_field_instance_settings_form().
+ */
+function social_likes_field_instance_settings_form($field, $instance) {
+
+  $social_likes = _social_likes_get_settings();
+  $form = array();
+  $layouts = array(
+    'default' => t('Default (all buttons in a row)'),
+    'vertical' => t('Vertical (All buttons in a column)'),
+    'single_button' => t('One button with a counter (summ of all the networks)'),
+  );
+  $addons_settings = array(
+    'no_text' => t('No text'),
+    'no_counters' => t('No counters'),
+  );
+  $form['description'] = array(
+    '#type' => 'item',
+    '#title' => t('See interactive builder.'),
+    '#markup' => l('http://sapegin.github.io/social-likes/', 'http://sapegin.github.io/social-likes/')
+  );
+  $vendors = $social_likes['vendors'];
+  $form['vendors'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Vendors'),
+    '#options' => $vendors,
+    '#required' => TRUE,
+    '#default_value' => !empty($instance['settings']['vendors']) ? $instance['settings']['vendors'] : array_combine(array_keys($vendors), array_keys($vendors)),
+  );
+  $form['layouts'] = array(
+    '#type' => 'select',
+    '#title' => t('layouts'),
+    '#options' => $layouts,
+    '#default_value' => $instance['settings']['layouts'],
+  );
+  $form['addons_settings'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Addons settings'),
+    '#options' => $addons_settings,
+    '#default_value' => $instance['settings']['addons_settings'],
+  );
+  return $form;
+}
+
+/*
+ * get default social likes vendors
+ */
+function _social_likes_get_settings() {
+  $social_likes = array(
+    'vendors' => array(
+      'facebook' => 'Facebook',
+      'twitter' => 'Twitter',
+      'mailru' => 'Мой мир',
+      'vkontakte' => 'Вконтакте',
+      'odnoklassniki' => 'Одноклассники',
+      'plusone' => 'Google+',
+      'livejournal' => 'LiveJournal',
+      'pinterest' => 'Pinterest',
+    ),
+  );
+  return $social_likes;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function social_likes_field_formatter_info() {
+  return array(
+    'social_likes_formatter_default' => array(
+      'label' => t('Social likes (default)'),
+      'field types' => array('social_likes'),
+    ),
+  );
+}
+
+/**
+ * Implements of hook_field_formatter_view().
+ */
+function social_likes_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $path = drupal_get_path('module', 'social_likes');
+  $element = array();
+  $vars = array(
+    'vendors' => array_filter($instance['settings']['vendors']),
+    'layouts' => $instance['settings']['layouts'],
+    'addons_settings' => array_filter($instance['settings']['addons_settings']),
+  );
+  $variant = 'minified';
+  $loaded = libraries_load('social_likes', $variant);
+  drupal_add_css($path . '/social_likes.css');
+  $element[0] = array('#markup' => theme('social_likes', $vars));
+  return $element;
+}
+
+/**
+ * Implements of hook_theme().
+ */
+function social_likes_theme($existing, $type, $theme, $path) {
+  return array(
+    'social_likes' => array(
+      'variables' => array('vendors' => NULL, 'layouts' => NULL, 'addons_settings' => NULL),
+    ),
+  );
+}
+
+/**
+ * Theme function for display social likes.
+ */
+function theme_social_likes($vars) {
+  $social_likes = _social_likes_get_settings();
+  drupal_add_js(drupal_get_path('module', 'social_likes') . '/js/social_likes.js', array(
+    'scope' => 'footer',
+    'weight' => 99
+  ));
+  $vendors = $vars['vendors'];
+  $layouts = $vars['layouts'];
+  $addons_settings = $vars['addons_settings'];
+
+  $output = '';
+  $loaded = libraries_load('social_likes');
+  $g_counter_url = url($loaded['library path'] . '/googleplusonecount.php', array('absolute' => TRUE));
+  $vendor_options = array(
+    'facebook' => array('title' => t('Share on facebook')),
+    'twitter' => array('title' => t('Share on twitter')),
+    //'twitter.com',
+    'mailru' => array('title' => t('Share on mail.ru')),
+    // 'mail.ru',
+    'vkontakte' => array('title' => t('Share on vkontakte')),
+    // 'vkontakte.ru',
+    'odnoklassniki' => array('title' => t('Share on odnoklassniki')),
+    //'odnoklassniki.ru',
+    'plusone' => array('data-counter' => $g_counter_url . '?url={url}&callback=?', 'title' => t('Share on google+')),
+    // 'plus.google.com',
+    'livejournal' => array('title' => t('Share on livejournal')),
+    // 'livejournal.com',
+    'pinterest' => array('title' => t('Share on pinterest')),
+    // 'pinterest.com'
+  );
+
+  $attributes = array('class' => array('social-likes'));
+  $attributes['data-url'] = url(drupal_get_path_alias($_GET['q']), array('absolute' => TRUE));
+  switch ($layouts) {
+    case 'vertical':
+      $attributes['class'][] = 'social-likes_vertical';
+      break;
+    case 'single_button':
+      $attributes['class'][] = 'social-likes_single';
+      break;
+  }
+
+  if (!empty($addons_settings['no_text'])) {
+    $attributes['class'][] = 'social-likes_notext';
+  }
+  if (!empty($addons_settings['no_counters'])) {
+    $attributes['data-counters'] = 'no';
+  }
+  foreach ($vendors as $vendor_name) {
+    $item = array(
+      'data' => empty($addons_settings['no_text']) ? $social_likes['vendors'][$vendor_name] : '',
+      'class' => array($vendor_name),
+    );
+    $item += $vendor_options[$vendor_name];
+    $items[] = $item;
+  }
+  $output = theme('item_list', array('items' => $items, 'attributes' => $attributes));
+  return $output;
+}
+
+/*
+ * helper get fields on node type
+ * @return
+ * An string field_name or FALSE
+*/
+function _social_likes_get_field_by_type($node = NULL, $field_type_name = 'social_likes') {
+  $field_name = FALSE;
+  $field_instanses = field_info_instances('node', $node->type);
+  $field_info_fields = field_info_fields();
+  foreach ($field_instanses as $ins_field_name => $field_ins) {
+    if ($field_info_fields[$ins_field_name]['type'] == $field_type_name) {
+      $field_name = $ins_field_name;
+      break;
+    }
+  }
+  return $field_name;
+}
+
+/*
+ * helper function for build description from node
+ */
+function _social_likes_get_description($node = NULL) {
+  $description = '';
+  $body_items = field_get_items('node', $node, 'body');
+  if (!empty($body_items[0]['summary'])) {
+    $description = $body_items[0]['summary'];
+  }
+  elseif (!empty($body_items[0]['value'])) {
+    $description = $body_items[0]['value'];
+  }
+  if (!empty($description)) {
+    $truncate = trim(truncate_utf8($description, '600', TRUE, FALSE));
+    $description = $truncate . (drupal_substr($truncate, -1, 1) == '.' ? '..' : '...');
+  }
+  return $description;
+}
+
+/*
+ * helper function, build properties for social sites
+ */
+function _social_likes_get_properties($node = NULL) {
+  $prop = array();
+
+  $prop['title'] = $node->title;
+  $prop['description'] = _social_likes_get_description($node);
+  $uri = entity_uri('node', $node);
+
+  $prop['url'] = url(drupal_get_path_alias($uri['path']), array('absolute' => TRUE));
+
+
+  if (($image_field_name = _social_likes_get_field_by_type($node, 'image')) && ($image_field_items = field_get_items('node', $node, $image_field_name))) {
+    $prop['image_file'] = current($image_field_items);
+  }
+  else {
+    // logo
+    $logo_url = theme_get_setting('logo');
+    $prop['logo_url'] = $logo_url;
+  }
+  return $prop;
+}
+
+/*
+* helper function, add html head tags
+ */
+function _social_likes_drupal_add_html_head($dates = array()) {
+  foreach ($dates as $key => $attr) {
+    $attr['content'] = filter_xss($attr['content'], array());
+    $data = array(
+      '#tag' => 'meta',
+      '#attributes' => $attr,
+    );
+    drupal_add_html_head($data, 'social_likes_' . $key);
+  }
+}
+
+/*
+ * Set html_head meta og title for bundle with social_likes field
+*/
+function social_likes_node_view_alter(&$build) {
+  if (SOCIAL_LIKES_ADD_META_TAG_ENABLED) {
+    $node = $build['#node'];
+    if ($social_likes_field_name = _social_likes_get_field_by_type($node)) {
+      $prop = _social_likes_get_properties($node);
+      $dates['type'] = array(
+        'property' => 'og:type',
+        'content' => 'article',
+      );
+      $dates['url'] = array(
+        'property' => 'og:url',
+        'content' => $prop['url'],
+      );
+      $dates['title'] = array(
+        'property' => 'og:title',
+        'content' => $prop['title'],
+      );
+      if (!empty($prop['description'])) {
+        $dates['description'] = array(
+          'property' => 'og:description',
+          'content' => $prop['description'],
+        );
+      }
+      _social_likes_drupal_add_html_head($dates);
+    }
+  }
+}
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function social_likes_field_is_empty($item, $field) {
+  return empty($item['value']);
+}
+
+/*
+ * Implements hook_block_info
+ */
+function social_likes_block_info() {
+  $blocks['social_likes']['info'] = t('Social likes');
+  $blocks['social_likes']['properties']['administrative'] = TRUE;
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ */
+function social_likes_block_configure($delta = '') {
+  $form = array();
+  if ($delta == 'social_likes') {
+    $settings = _social_likes_get_settings();
+    $vendors_keys = array_keys($settings['vendors']);
+    $default_vendors = array_combine($vendors_keys, $vendors_keys);
+    $form['social_likes_block_vendors'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Social likes vendors'),
+      '#default_value' => variable_get('social_likes_block_vendors', $default_vendors),
+      '#options' => $settings['vendors'],
+    );
+
+    // weights
+    foreach (array_filter(variable_get('social_likes_block_vendors', array())) as $vendor_key) {
+      $form['social_likes_block_vendor_weight_' . $vendor_key] = array(
+        '#type' => 'select',
+        '#title' => $vendor_key . '(weight)',
+        '#default_value' => variable_get('social_likes_block_vendor_weight_' . $vendor_key, '1'),
+        '#options' => drupal_map_assoc(range(1, 10)),
+      );
+    }
+  }
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function social_likes_block_save($delta = '', $edit = array()) {
+  if ($delta == 'social_likes') {
+    variable_set('social_likes_block_vendors', $edit['social_likes_block_vendors']);
+    foreach ($edit as $edit_key => $edit_value) {
+      if (strstr($edit_key, 'social_likes_block_vendor_weight_')) {
+        variable_set($edit_key, $edit_value);
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_block_view().
+ */
+function social_likes_block_view($delta = '') {
+  $block = array();
+
+  switch ($delta) {
+    case 'social_likes':
+      $block['subject'] = t('Share in social networks'); // Поделиться в соцсетях
+      $settings = _social_likes_get_settings();
+      $vendors = array_filter(variable_get('social_likes_block_vendors', array(array_combine(array_keys($settings['vendors']), array_keys($settings['vendors'])))));
+
+      // 'social_likes_block_vendor_weight_'
+      $ven_weight = array();
+      $weight = 0;
+      foreach ($vendors as $social_name) {
+        $weight++;
+        $ven_weight[variable_get('social_likes_block_vendor_weight_' . $social_name, $weight)] = $social_name;
+      }
+
+      if (!$ven_weight) {
+        // weight
+        $ven_weight = array(
+          'facebook',
+          'odnoklassniki',
+          'vkontakte',
+          'twitter',
+          'mailru',
+          'plusone',
+          'livejournal',
+          'pinterest',
+        );
+      } else {
+        ksort($ven_weight);
+      }
+      $vendors = array_intersect_key(array_combine($ven_weight, $ven_weight), $vendors);
+
+      $block['content'] = array(
+        '#theme' => 'social_likes',
+        '#layouts' => 'horizont',
+        '#vendors' => $vendors,
+        '#addons_settings' => array('no_text' => TRUE, 'no_counters' => TRUE),
+      );
+      break;
+  }
+  return $block;
+}

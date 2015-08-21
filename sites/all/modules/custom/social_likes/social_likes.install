@@ -1,0 +1,50 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the social_likes module.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+function social_likes_requirements($phase) {
+  $requirements = array();
+
+  if ($phase == 'runtime') {
+    $t = get_t();
+    $library = libraries_detect('social_likes');
+
+    if (empty($library['installed'])) {
+      $requirements['social_likes_plugin'] = array(
+        'title' => $t('Social likes plugin'),
+        'value' => $t('At least @a', array('@a' => SOCIAL_LIKES_MIN_PLUGIN_VERSION)),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('You need to download the !social_likes, extract the archive and place the social_likes directory in the %path directory on your server.', array(
+          '!social_likes' => l($t('Social likes plugin'), $library['download url']),
+          '%path' => 'sites/all/libraries'
+        )),
+      );
+    }
+    elseif (version_compare($library['version'], SOCIAL_LIKES_MIN_PLUGIN_VERSION, '>=')) {
+      $requirements['social_likes'] = array(
+        'title' => $t('Social likes plugin'),
+        'severity' => REQUIREMENT_OK,
+        'value' => $library['version'],
+      );
+    }
+    else {
+      $requirements['SOCIAL_LIKES_MIN_PLUGIN_VERSION'] = array(
+        'title' => $t('Social likes plugin'),
+        'value' => $t('At least @a', array('@a' => SOCIAL_LIKES_MIN_PLUGIN_VERSION)),
+        'severity' => REQUIREMENT_ERROR,
+        'description' => $t('You need to download a later version of the !social_likes and replace the old version located in the %path directory on your server.', array(
+          '!social_likes' => l($t('Social likes plugin'), $library['download url']),
+          '%path' => $library['library path']
+        )),
+      );
+    }
+  }
+
+  return $requirements;
+}

@@ -1,0 +1,8 @@
+name = Custom seo
+description = Custom seo
+package = Custom
+version = VERSION
+core = 7.x
+
+dependencies[] = metatag
+dependencies[] = simplemeta

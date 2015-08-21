@@ -1,0 +1,582 @@
+<?php
+/**
+ * @file
+ * Trade catalog functional
+ */
+
+DEFINE('TRADE_CATALOG_CATALOG_PAGE', 'catalog');
+DEFINE('TRADE_CATALOG_POPULARITY_FIELD', 'field_product_popularity');
+
+function _trade_catalog_get_voc_mn() {
+  $catalog_voc_mn = '';
+  $catalog_field = variable_get('trade_product_catalog_field', 'field_product_catalog');
+  $catalog_field_info = field_info_field($catalog_field);
+  if (!empty($catalog_field_info['settings']['allowed_values'][0]['vocabulary'])) {
+    $catalog_voc_mn = $catalog_field_info['settings']['allowed_values'][0]['vocabulary'];
+  }
+  return $catalog_voc_mn;
+}
+
+function _trade_catalog_filters_get_dimensions_fields($mode = 'key') {
+  $catalog_dimensions_filter_slider_fields = array();
+
+  $product_bundles = array_filter(variable_get('trade_product_node_types', array('product')));
+  $field_options = array();
+
+  foreach ($product_bundles as $bundle) {
+    $catalog_dimensions_filter_fields_options = _trade_catalog_get_field_instances('node', $bundle, array('number_integer'));
+  }
+  if (!empty($catalog_dimensions_filter_fields_options)) {
+    $usable_dimensions_fields = array(
+      'field_product_height',
+      'field_product_width',
+      'field_product_depth',
+    );
+
+    $catalog_dimensions_filter_fields_options = array_intersect_key($catalog_dimensions_filter_fields_options, array_combine($usable_dimensions_fields, $usable_dimensions_fields));
+    if (!empty($catalog_dimensions_filter_fields_options)) {
+      foreach ($catalog_dimensions_filter_fields_options as $field_name => $field_title) {
+
+        $catalog_dimensions_filter_slider_fields[$field_name . '__from'] = $mode == 'key' ? $field_name . '__from' : $field_title;
+        $catalog_dimensions_filter_slider_fields[$field_name . '__to'] = $mode == 'key' ? $field_name . '__to' : $field_title;
+      }
+    }
+  }
+  return $catalog_dimensions_filter_slider_fields;
+}
+
+function trade_catalog_menu_alter(&$items) {
+
+  // taxonomy term page
+  $items['taxonomy/term/%taxonomy_term']['page callback'] = '_trade_catalog_pages_taxonomy_term';
+  $items['taxonomy/term/%taxonomy_term']['module'] = 'trade_catalog';
+  $items['taxonomy/term/%taxonomy_term']['file'] = 'trade_catalog.pages.inc';
+}
+
+function _trade_catalog_is_catalog_term_page() {
+  $is = FALSE;
+  $voc_mn = _trade_catalog_get_voc_mn();
+  $voc = taxonomy_vocabulary_machine_name_load($voc_mn);
+  if (!empty($voc)) {
+    $term = menu_get_object('taxonomy_term', 2);
+    if (empty($term)) {
+      $term = _trade_catalog_term_load(current_path());
+    }
+    if (!empty($term) && $term->vid == $voc->vid) {
+      $is = TRUE;
+    }
+  }
+
+  return $is;
+}
+
+function trade_catalog_taxonomy_term_view_alter(&$build) {
+
+  //remove term name link on catalog term page
+  if ($build['#term']->vocabulary_machine_name && variable_get('trade_catalog_rewrite_taxonomy_term_theme', FALSE)) {
+    $build['#theme'] = 'trade_catalog_taxonomy_term';
+  }
+}
+
+/*
+ * implements hook_menu()
+ */
+function trade_catalog_menu() {
+  $items[TRADE_CATALOG_CATALOG_PAGE] = array(
+    'title' => 'Catalog',
+    'page callback' => 'trade_catalog_pages_catalog_page',
+    'access arguments' => array('access content'),
+    'file' => 'trade_catalog.pages.inc',
+    'weight' => -9,
+  );
+  $items['admin/config/trade/trade_catalog'] = array(
+    'title' => 'Trade catalog',
+    'description' => 'Trade catalog',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('trade_catalog_admin_config_catalog_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -8,
+    'file' => 'trade_catalog.admin.inc',
+  );
+  $items['admin/config/trade/trade_catalog_filters'] = array(
+    'title' => 'Trade catalog sort',
+    'description' => 'Trade catalog sort',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('trade_catalog_sort_fields_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -8,
+    'file' => 'trade_catalog.admin.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function trade_catalog_preprocess_page(&$variables) {
+  global $language;
+
+  // set breadcrumb on product page
+  if ($node = menu_get_object()) {
+    if (!empty($node->type) && in_array($node->type, variable_get('trade_product_node_types', array('product')), TRUE)) {
+      $field_name = variable_get('trade_product_catalog_field', 'field_product_catalog');
+      if (!empty($field_name)) {
+        if (!empty($node->{$field_name}[LANGUAGE_NONE][0]['tid'])) {
+          $tid = $node->{$field_name}[LANGUAGE_NONE][0]['tid'];
+        }
+        elseif (!empty($node->{$field_name}[$language->language][0]['tid'])) {
+          $tid = $node->{$field_name}[$language->language][0]['tid'];
+        }
+      }
+      if (!empty($tid)) {
+        $parents = taxonomy_get_parents_all($tid);
+        if (!empty($parents)) {
+          $breadcrumb = drupal_get_breadcrumb();
+          $breadcrumb_add = array();
+          foreach ($parents as $term) {
+            if (module_exists('i18n_taxonomy')) {
+              $term_name = i18n_taxonomy_term_name($term);
+            }
+            else {
+              $term_name = $term->name;
+            }
+
+            $breadcrumb_add[] = l($term_name, "taxonomy/term/{$term->tid}");
+          }
+          $breadcrumb = array_merge($breadcrumb, array_reverse($breadcrumb_add));
+          drupal_set_breadcrumb($breadcrumb);
+        }
+      }
+    }
+  }
+}
+
+function _trade_catalog_page_access($tid) {
+  $access = FALSE;
+  if (_trade_catalog_term_load($tid) && user_access('content access')) {
+    $access = TRUE;
+  }
+
+  return $access;
+}
+
+function trade_catalog_theme() {
+  return array(
+    'trade_catalog_sort_fields_form' => array(
+      'render element' => 'form',
+      'file' => 'trade_catalog.admin.inc',
+    ),
+    'trade_catalog_item_list' => array(
+      'variables' => array(
+        'items' => array(),
+        'title' => NULL,
+        'type' => 'div',
+        'attributes' => array()
+      ),
+    ),
+    'trade_catalog_terms_block' => array(
+      'variables' => array(
+        'options' => NULL
+      ),
+      'file' => 'trade_catalog.pages.inc',
+    ),
+    'trade_catalog_pages_catalog_page' => array(
+      'variables' => array(
+        'options' => NULL
+      ),
+      'file' => 'trade_catalog.pages.inc',
+    ),
+    'catalog_filters_block' => array(
+      'variables' => array(
+        'options' => NULL
+      ),
+      'file' => 'trade_catalog.pages.inc',
+    ),
+    'trade_catalog_search_block' => array(
+      'variables' => array(
+        'options' => NULL
+      ),
+      'file' => 'trade_catalog.pages.inc',
+    ),
+    'trade_catalog_taxonomy_term' => array(
+      'render element' => 'elements',
+      'template' => 'trade-catalog-taxonomy-term',
+    ),
+  );
+}
+
+/**
+ * Process variables for taxonomy-term.tpl.php.
+ */
+function template_preprocess_trade_catalog_taxonomy_term(&$variables) {
+  $variables['view_mode'] = $variables['elements']['#view_mode'];
+  $variables['term'] = $variables['elements']['#term'];
+  $term = $variables['term'];
+
+  $uri = entity_uri('taxonomy_term', $term);
+  $variables['term_url'] = url($uri['path'], $uri['options']);
+  $variables['term_name'] = check_plain($term->name);
+
+  // is page trade catalog term
+  $trade_catalog_term = _trade_catalog_term_load(current_path());
+  $variables['page'] = $variables['view_mode'] == 'full' && (!empty($trade_catalog_term) && $term->tid == $trade_catalog_term->tid);
+
+  // Flatten the term object's member fields.
+  $variables = array_merge((array) $term, $variables);
+
+  // Helpful $content variable for templates.
+  $variables['content'] = array();
+  foreach (element_children($variables['elements']) as $key) {
+    $variables['content'][$key] = $variables['elements'][$key];
+  }
+
+  field_attach_preprocess('taxonomy_term', $term, $variables['content'], $variables);
+
+  // Gather classes, and clean up name so there are no underscores.
+  $vocabulary_name_css = str_replace('_', '-', $term->vocabulary_machine_name);
+  $variables['classes_array'][] = 'vocabulary-' . $vocabulary_name_css;
+
+  $variables['theme_hook_suggestions'][] = 'trade_catalog_taxonomy_term__' . $term->vocabulary_machine_name;
+  $variables['theme_hook_suggestions'][] = 'trade_catalog_taxonomy_term__' . $term->tid;
+}
+
+function trade_catalog_block_view_alter(&$data, $block) {
+  if ($block->delta == 'menu-catalog') {
+    drupal_add_js(drupal_get_path('module', 'trade_catalog') . '/js/trade_catalog_tree.js');
+    $js_settings = array('trade' => array('open' => t('turn up'), 'close' => t('shut up')));
+    drupal_add_js($js_settings, array('type' => 'setting'));
+  }
+}
+
+function _trade_catalog_sort_fields_elements($enable = 'all') {
+  $trade_catalog_product_fields = _trade_catalog_product_get_fields(TRUE);
+  $trade_catalog_product_fields = array(
+      'price' => t('Price'),
+      'created' => t('Novelty'),
+      'title' => t('Title')
+    ) + $trade_catalog_product_fields;
+
+  $sort_fields_default = array();
+  $sort_fields = variable_get('trade_catalog_sort_fields', $sort_fields_default);
+  $sort_fields_elements = array();
+  $sort_fields_names = array();
+  $i = 0;
+
+  foreach ($sort_fields as $i => $sort_field) {
+    if (isset($trade_catalog_product_fields[$sort_field['name']])) {
+      if ($enable == 'all' || $sort_field['enable'] == $enable) {
+        $sort_fields_elements[$i] = $sort_field;
+      }
+      $sort_fields_names[$sort_field['name']] = TRUE;
+    }
+  }
+
+  if ($enable !== 1) {
+    foreach (array_diff_key($trade_catalog_product_fields, $sort_fields_names) as $name => $title) {
+      $i++;
+      $sort_fields_elements[$i] = array(
+        'name' => $name,
+        'title' => $title,
+        'enable' => FALSE,
+        'default' => FALSE,
+        'direction' => 'asc',
+        'weight' => $i,
+      );
+    }
+  }
+
+  return $sort_fields_elements;
+}
+
+function _trade_catalog_product_get_fields($wo_options_fields = FALSE) {
+
+  //catalog fields
+  $field_options = array();
+  $product_bundles = array_filter(variable_get('trade_product_node_types', array('product')));
+
+  foreach ($product_bundles as $bundle) {
+
+    $field_options_bundle = _trade_catalog_get_field_instances('node', $bundle, array(
+      'taxonomy_term_reference',
+      'number_integer',
+      'number_decimal',
+      'text',
+    ));
+
+    if ($wo_options_fields) {
+      $trade_product_node_types_options = array_filter(variable_get('trade_product_node_types_options_' . $bundle, array()));
+      $field_options_bundle = array_diff_key($field_options_bundle, $trade_product_node_types_options);
+    }
+    $field_options += $field_options_bundle;
+  }
+
+  return $field_options;
+}
+
+function _trade_catalog_get_value2filter_value($get_value = '') {
+  $filter_value_search = array('_', '~');
+  $filter_value_replace = array('-', '/');
+  $filter_value = str_replace($filter_value_search, $filter_value_replace, $get_value);
+  return $filter_value;
+}
+
+function _trade_catalog_filter_value2get_value($filter_value = '') {
+  $filter_value_search = array('-', '/');
+  $filter_value_replace = array('_', '~');
+  $get_value = str_replace($filter_value_search, $filter_value_replace, $filter_value);
+  return $get_value;
+}
+
+function _trade_catalog_term_load($tid) {
+  if (is_string($tid)) {
+    if (!empty($tid)) {
+      $filter_start = strpos($tid, '/filter');
+      if ($filter_start) {
+        $tid = drupal_substr($tid, 0, $filter_start);
+      }
+      $term_alias_ar = explode('/', $tid);
+      if (!empty($term_alias_ar[0]) && $term_alias_ar[0] == TRADE_CATALOG_CATALOG_PAGE) {
+        array_shift($term_alias_ar);
+      }
+      $term_alias = implode('/', $term_alias_ar);
+      // $term_alias = str_replace(TRADE_CATALOG_CATALOG_PAGE . '/', '', $tid);
+      $normal_path = drupal_get_normal_path($term_alias);
+      $tid = str_replace('taxonomy/term/', '', $normal_path);
+    }
+  }
+  if (is_numeric($tid)) {
+    if ($voc_mn = _trade_catalog_get_voc_mn()) {
+      $voc = taxonomy_vocabulary_machine_name_load($voc_mn);
+      $terms = taxonomy_term_load_multiple(array($tid), array());
+      if (!empty($terms)) {
+        $term = array_shift($terms);
+        if (!empty($term->vid) && $term->vid == $voc->vid) {
+          return $term;
+        }
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Implements hook_url_outbound_alter().
+ *
+ * Rewrite catalog URLs.
+ */
+function trade_catalog_url_outbound_alter(&$path, &$options, $original_path) {
+  if (strpos($path, 'taxonomy/term/') !== FALSE) {
+    _trade_catalog_url_outbound_path($path);
+  }
+}
+
+function _trade_catalog_url_outbound_path(&$path) {
+  $term = menu_get_object('taxonomy_term', 2, $path);
+  if (!empty($term)) {
+    $path_explode = explode('/', $path);
+    if ($path_explode && empty($path_explode[3]) || $path_explode[3] == 'view') {
+      $catalog_voc_mn = _trade_catalog_get_voc_mn();
+      if (!empty($catalog_voc_mn) && $term->vocabulary_machine_name == $catalog_voc_mn) {
+        $path = TRADE_CATALOG_CATALOG_PAGE . '/' . drupal_get_path_alias($path);
+      }
+    }
+  }
+}
+
+/**
+ *  preprocess l()
+ */
+function trade_catalog_preprocess_link(&$variables) {
+  if (!empty($variables['path']) && strpos($variables['path'], 'taxonomy/term/') !== FALSE) {
+    _trade_catalog_url_outbound_path($variables['path']);
+  }
+}
+
+/**
+ * Implements hook_menu_link_alter().
+ */
+function trade_catalog_menu_link_alter(&$link) {
+  if (strpos($link['link_path'], 'taxonomy/term') === 0) {
+    $link['options']['alter'] = TRUE;
+  }
+}
+
+/**
+ * Implements hook_translated_menu_link_alter().
+ */
+function trade_catalog_translated_menu_link_alter(&$link) {
+
+  if (strpos($link['link_path'], 'taxonomy/term/') === 0) {
+    $term = menu_get_object('taxonomy_term', 2, $link['link_path']);
+    if (!empty($term)) {
+      $term_from_current_path = _trade_catalog_term_load(current_path());
+      if (empty($term_from_current_path)) {
+        $product_node = menu_get_object();
+        if (!empty($product_node)) {
+          $catalog_field = variable_get('trade_product_catalog_field', 'field_product_catalog');
+          if (!empty($catalog_field)) {
+            $catalog_field_items = field_get_items('node', $product_node, $catalog_field);
+
+            if (!empty($catalog_field_items[0]['tid'])) {
+              $term_from_current_path = taxonomy_term_load($catalog_field_items[0]['tid']);
+              if (!empty($term_from_current_path)) {
+                $set_active_tid = $catalog_field_items[0]['tid'];
+              }
+            }
+          }
+        }
+      }
+
+
+      if (!empty($term_from_current_path->tid)) {
+        $parents = taxonomy_get_parents_all($term_from_current_path->tid);
+        foreach ($parents as $key => $f_term) {
+          if ($f_term->tid == $term->tid && $term->tid != $term_from_current_path->tid) {
+            $link['in_active_trail'] = TRUE;
+            break;
+          }
+          elseif (!empty($set_active_tid) && $term->tid == $term_from_current_path->tid) {
+            $link['localized_options']['attributes']['class'][] = 'active';
+          }
+        }
+      }
+      $catalog_voc_mn = _trade_catalog_get_voc_mn();
+      if (!empty($catalog_voc_mn) && $term->vocabulary_machine_name == $catalog_voc_mn) {
+        $link['href'] = TRADE_CATALOG_CATALOG_PAGE . '/' . drupal_get_path_alias($link['link_path']);
+        $link['title'] = '<span>' . $link['title'] . '</span>';
+        $link['localized_options']['html'] = TRUE;
+      }
+    }
+  }
+}
+
+function _trade_show_catalog_tree() {
+  $visible = FALSE;
+  $current_path = current_path();
+  if (drupal_is_front_page()) {
+    $visible = TRUE;
+  }
+  elseif (_trade_catalog_is_catalog_page()) {
+    $visible = TRUE;
+  }
+  elseif ($product_node = menu_get_object()) {
+    $product_types = array_filter(variable_get('trade_product_node_types', array('product')));
+    if ($product_types) {
+      $visible = TRUE;
+    }
+  }
+  return $visible;
+}
+
+function _trade_catalog_is_catalog_page() {
+  return current_path() == TRADE_CATALOG_CATALOG_PAGE || _trade_catalog_is_catalog_term_page();
+}
+
+function trade_catalog_block_info() {
+  $blocks['catalog_filters'] = array(
+    'info' => t('Catalog filters (trade)'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+  $blocks['catalog_terms'] = array(
+    'info' => t('Catalog terms (trade)'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+  $blocks['catalog_search'] = array(
+    'info' => t('Catalog search (trade)'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+  return $blocks;
+}
+
+function trade_catalog_block_view($delta = '') {
+  global $user;
+  $block = array();
+  switch ($delta) {
+
+    case 'catalog_search':
+      if (user_access('access content') && empty($_GET['search'])) {
+        $block['subject'] = t('Search on catalog');
+        $block['content'] = array(
+          '#theme' => 'trade_catalog_search_block',
+        );
+      }
+      break;
+    case 'catalog_terms':
+      if (user_access('access content')) {
+        $voc_mn = _trade_catalog_get_voc_mn();
+        $voc = taxonomy_vocabulary_machine_name_load($voc_mn);
+        if (!empty($voc)) {
+          $term = _trade_catalog_term_load(current_path());
+          $block['content'] = array(
+            '#theme' => 'trade_catalog_terms_block',
+            '#options' => array(
+              'term' => $term,
+              'voc' => $voc,
+            )
+          );
+        }
+      }
+      break;
+    case 'catalog_filters':
+      if (user_access('access content')) {
+        $term = menu_get_object('taxonomy_term', 2);
+        if (empty($term)) {
+          $term = _trade_catalog_term_load(current_path());
+        }
+
+        if (!empty($term) && _trade_catalog_is_catalog_term_page()) {
+
+          // $terms = array($term->tid => $term) + taxonomy_get_children($term->tid);
+          // term & children on term page
+          if (!empty($term->tid)) {
+            $catalog_terms = array($term->tid => $term);
+            $tree = taxonomy_get_tree($term->vid, $term->tid);
+
+            if (!empty($tree)) {
+              foreach ($tree as $key => $tree_term) {
+                $catalog_terms[$tree_term->tid] = $tree_term;
+              }
+            }
+          }
+
+          $block['content'] = array(
+            '#theme' => 'catalog_filters_block',
+            '#options' => array('catalog_terms' => $catalog_terms),
+          );
+        }
+      }
+      break;
+  }
+  return $block;
+}
+
+/*
+ * Get field instances on field types
+ */
+function _trade_catalog_get_field_instances($entity_type = 'node', $bundle_name = 'product', $field_types = array('taxonomy_term_reference'), $mode = 'label') {
+  $ins = array();
+  $weights = array();
+  $field_info = field_info_fields();
+  $field_instances = field_info_instances($entity_type, $bundle_name);
+
+  foreach ($field_instances as $field_ins_name => $field_ins) {
+    if (in_array($field_info[$field_ins_name]['type'], $field_types, TRUE)) {
+      $ins[$field_ins_name] = $mode == 'label' ? $field_ins['label'] : $field_ins;
+      $weights[$field_ins_name] = !empty($field_ins['widget']['weight']) ? $field_ins['widget']['weight'] : 0;
+    }
+  }
+
+  if (!empty($weights)) {
+    asort($weights);
+    $ins = array_merge($weights, $ins);
+  }
+
+  return $ins;
+}
+
+function _trade_catalog_filters_sort($a, $b) {
+  return $a['weight'] < $b['weight'] ? -1 : ($a['weight'] > $b['weight'] ? 1 : ($a['title'] < $b['title'] ? -1 : 1));
+}

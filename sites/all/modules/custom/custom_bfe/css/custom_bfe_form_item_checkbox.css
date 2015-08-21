@@ -1,0 +1,60 @@
+.form-item.form-type-checkbox input.form-checkbox {
+    display: none;
+}
+
+.form-item.form-type-checkbox input.form-checkbox + label {
+    padding-left: 25px;
+    background: url(../images/checkbox.png) no-repeat left center, url(../images/checkbox-active.png) -9999px center no-repeat;
+}
+
+.rtl .form-item.form-type-checkbox input.form-checkbox + label {
+    padding-right: 25px;
+    background: url(../images/checkbox.png) no-repeat right center, url(../images/checkbox-active.png) -9999px center no-repeat;
+}
+
+.form-item.form-type-checkbox input.form-checkbox:checked + label {
+    padding-left: 25px;
+    background: url(../images/checkbox-active.png) no-repeat 0 center;
+}
+
+.rtl .form-item.form-type-checkbox input.form-checkbox:checked + label {
+    padding-right: 25px;
+    background: url(../images/checkbox-active.png) no-repeat right center;
+}
+
+.form-type-checkbox.form-disabled.form-item.form-type-checkbox label {
+    background: none;
+}
+
+.rtl .form-type-checkbox.form-disabled.form-item.form-type-checkbox label {
+    background: none;
+}
+
+.page-admin .form-item.form-type-checkbox label,
+.page-admin .form-item.form-type-checkbox input.form-checkbox:checked + label,
+.page-node-edit .form-item.form-type-checkbox label,
+.page-node-edit .form-item.form-type-checkbox input.form-checkbox:checked + label,
+.page-node-add .form-item.form-type-checkbox label,
+.page-node-add .form-item.form-type-checkbox input.form-checkbox:checked + label,
+.page-user-edit .form-item.form-type-checkbox label,
+.page-user-edit .form-item.form-type-checkbox input.form-checkbox:checked + label,
+.page-taxonomy-term-edit .form-item.form-type-checkbox label,
+.page-taxonomy-term-edit .form-item.form-type-checkbox input.form-checkbox:checked + label {
+    padding-left: 0 !important;
+    background: none !important;
+}
+
+.page-admin .form-item.form-type-checkbox input.form-checkbox,
+.page-admin .form-item.form-type-checkbox input.form-checkbox:checked,
+.page-node-edit .form-item.form-type-checkbox input.form-checkbox,
+.page-node-edit .form-item.form-type-checkbox input.form-checkbox:checked,
+.page-node-add .form-item.form-type-checkbox input.form-checkbox,
+.page-node-add .form-item.form-type-checkbox input.form-checkbox:checked,
+.page-user-add .form-item.form-type-checkbox input.form-checkbox,
+.page-user-add .form-item.form-type-checkbox input.form-checkbox:checked,
+.page-user-edit .form-item.form-type-checkbox input.form-checkbox,
+.page-user-edit .form-item.form-type-checkbox input.form-checkbox:checked,
+.page-taxonomy-term-edit .form-item.form-type-checkbox input.form-checkbox,
+.page-taxonomy-term-edit .form-item.form-type-checkbox input.form-checkbox:checked {
+    display: inline;
+}

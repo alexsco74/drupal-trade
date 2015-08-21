@@ -1,0 +1,266 @@
+/*******************************************************************************
+ * simple_pik.layout.scss
+ *
+ * Styling of the "simple_pik" layout demonstrating the Compass grid extension Susy
+ * and building mobile first layouts.
+ ******************************************************************************/
+.l-header,
+.l-main,
+.l-footer {
+    *zoom: 1;
+    max-width: 1600px;
+    _width: 1600px;
+    padding-left: 42px;
+    padding-right: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+    min-width: 54em;
+    position: relative;
+}
+
+.l-region--footer-first {
+    width: 100%;
+    float: left;
+}
+
+.l-region--footer-second {
+    width: 100%;
+    float: left;
+}
+
+.l-footer {
+    border-top: 1px solid #edf1f2;
+    margin-bottom: 0;
+    background-color: #517384;
+}
+
+.l-header:after,
+.l-main:after,
+.l-footer:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+.l-region--highlighted,
+.l-region--help,
+.l-region--sidebar-first,
+.l-region--sidebar-second {
+    margin-bottom: 20px;
+}
+
+.l-region--sidebar-first {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    width: 100%;
+}
+
+.pik-animation-region-link {
+    display: block;
+    width: auto;
+    position: absolute;
+    left: -92px;
+    top: 90px;
+    z-index: 1000;
+
+}
+
+.pik-animation-region-link {
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+}
+
+.pik-animation-region-content {
+    border-top: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    left: -100%;
+    position: absolute;
+    background: #fff;
+    -webkit-transition: left .3s ease-out 0;
+    -moz-transition: left .3s ease-out .1s;
+    -ms-transition: left .3s ease-out .1s;
+    -o-transition: left .3s ease-out .1s;
+    transition: left .3s ease-out 0;
+
+    -webkit-border-radius: 0 5px 5px 0;
+    -moz-border-radius: 0 5px 5px 0;
+    -ms-border-radius: 0 5px 5px 0;
+    -o-border-radius: 0 5px 5px 0;
+    border-radius: 0 5px 5px 0;
+
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -o-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+
+    padding: 1rem;
+}
+
+.pik-animation-region-content.pik-is-open {
+    left: 0;
+    background: #fff;
+    padding: 1rem 50px 1rem 50px;
+}
+
+.l-content {
+    position: relative;
+}
+
+.l-header-top-col {
+    vertical-align: top;
+}
+
+@media (min-width: 70em) {
+    .l-header,
+    .l-main,
+    .l-footer {
+        max-width: 1600px;
+        padding-left: 5px;
+        padding-right: 5px;
+        position: relative;
+    }
+
+    .has-sidebar-first .l-content {
+        width: 74.68354%;
+        float: right;
+        margin-left: 0;
+    }
+
+    .has-sidebar-first .l-region--sidebar-first {
+        width: 24.05063%;
+        float: left;
+        position: static;
+        margin-right: 1.26582%;
+    }
+
+    .has-sidebar-first .l-region--sidebar-first .pik-animation-region-link {
+        display: none;
+    }
+
+    .has-sidebar-first .l-region--sidebar-first .pik-animation-region-content {
+        display: block;
+        position: static;
+        padding: 0;
+        -webkit-box-shadow: none !important;
+        -moz-box-shadow: none !important;
+        -o-box-shadow: none !important;
+        box-shadow: none !important;
+        border: 0 !important;
+
+    }
+
+    .has-sidebar-second .l-content {
+        width: 74.68354%;
+        float: left;
+        margin-right: 1.26582%;
+    }
+
+    .has-sidebar-second .l-region--sidebar-second {
+        width: 24.05063%;
+        float: right;
+        margin-right: 0;
+        clear: none;
+    }
+
+    .has-two-sidebars .l-content {
+        width: 49.36709%;
+        float: left;
+        margin-right: 1.26582%;
+        margin-left: 25.31646%;
+    }
+
+    .has-two-sidebars .l-region--sidebar-first,
+    .has-two-sidebars .l-region--sidebar-second {
+        width: 24.05063%;
+        float: left;
+        position: static;
+        margin-right: 1.26582%;
+    }
+
+    .has-two-sidebars .l-region--sidebar-first {
+        margin-left: -75.94937%;
+    }
+
+    .has-two-sidebars .l-region--sidebar-first .pik-animation-region-link {
+        display: none;
+    }
+
+    .has-two-sidebars .l-region--sidebar-first .pik-animation-region-content {
+        display: block;
+        position: static;
+        padding: 0;
+        -webkit-box-shadow: none !important;
+        -moz-box-shadow: none !important;
+        -o-box-shadow: none !important;
+        box-shadow: none !important;
+        border: 0 !important;
+    }
+
+    .has-two-sidebars .l-region--sidebar-second {
+        float: right;
+        margin-right: 0;
+        clear: none;
+    }
+}
+
+@media (min-width: 100em) {
+    .l-header,
+    .l-main,
+    .l-footer {
+        max-width: 1600px;
+        padding-left: 100px;
+        padding-right: 100px;
+        position: relative;
+    }
+}
+
+.l-table {
+    display: table;
+    width: 100%;
+    margin-top: 21px;
+    margin-bottom: 19px;
+}
+
+.l-table-row {
+    display: table-row;
+}
+
+.l-table-cell, .l-header-top-col, .l-region--header > .block {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.l-region--header > .block {
+    padding: .5em .5em 0 0;
+}
+
+.l-center-side {
+    width: 1%;
+}
+
+.l-left-side, .l-right-side {
+    width: 44.5%;
+    border-bottom: 2px solid #fff;
+    padding-bottom: 10px;
+}
+
+.l-header-top, .l-region--header-wrapper {
+    display: table;
+    width: 100%;
+}
+
+.l-header-top-line, .l-region--header {
+    display: table-row;
+}
+
+.l-header-top-right {
+    width: 100%;
+}

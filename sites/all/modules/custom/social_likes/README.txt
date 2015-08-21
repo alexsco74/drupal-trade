@@ -1,0 +1,1 @@
+Adopt https://github.com/sapegin/social-likes in Drupal

@@ -1,0 +1,1663 @@
+* {
+    outline: none !important;
+}
+
+.not-front .l-header {
+    height: auto;
+    background-color: #c0e5fa;
+}
+
+.front .l-header {
+    height: auto;
+    background-color: #c0e5fa;
+}
+
+@media (min-width: 50em) {
+    .front .l-header {
+        height: auto;
+    }
+}
+
+@media (min-width: 70em) {
+    .front .l-header {
+        height: auto;
+    }
+}
+
+.l-header-top-left {
+    max-width: 180px;
+    padding-top: 10px;
+    padding-right: 10px;
+}
+
+.l-branding img {
+    max-width: 170px;
+    max-height: 100px;
+}
+
+/* main-menu */
+.l-region--navigation nav.block--nav-bar {
+    display: table;
+    width: 100%;
+    clear: both;
+    vertical-align: middle;
+    border-top: 1px solid white;
+    padding-top: .5rem;
+}
+
+.l-region--navigation nav.block--nav-bar ul.menu {
+    font-family: 'a_futuraroundbold';
+    /* font-weight: bold; */
+    text-transform: uppercase;
+    width: 100%;
+    text-align: center;
+    display: table-row !important;
+    vertical-align: middle;
+}
+
+.l-region--navigation nav.block--nav-bar ul.menu li a,
+.l-region--navigation nav.block--nav-bar ul.menu li a:link,
+.l-region--navigation nav.block--nav-bar ul.menu li a:visited {
+    color: #286686;
+    text-decoration: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-size: .85em;
+    display: inline-block !important;
+    padding: 0;
+    position: static;
+    vertical-align: baseline;
+}
+
+.l-region--navigation nav.block--nav-bar ul.menu li a:hover {
+    text-decoration: underline;
+}
+
+.l-region--navigation nav.block--nav-bar ul.menu li a.active {
+    border-bottom: 2px solid #ffffff;
+}
+
+.l-region--navigation nav.block--nav-bar ul.menu li a.active:hover {
+    text-decoration: none;
+}
+
+.l-region--navigation nav.block--nav-bar ul.menu li {
+    display: table-cell;
+    width: 12%;
+    padding: 0;
+    height: 50px;
+    vertical-align: middle;
+}
+
+.l-region--navigation nav.block--nav-bar ul.menu li.first {
+    text-align: left;
+    padding: 0;
+    width: 8%;
+}
+
+.l-region--navigation nav.block--nav-bar ul.menu li.last {
+    text-align: right;
+    padding: 0;
+    width: 8%;
+}
+
+.l-region--navigation nav.block--nav-bar .menu li {
+    white-space: normal;
+}
+
+.l-region--navigation nav.block--nav-bar .menu:before,
+.l-region--navigation nav.block--nav-bar .menu:after {
+    height: auto;
+    content: normal;
+    overflow: visible;
+}
+
+.l-region--header .block--custom-fun .custom-fan-phone-wr {
+    font-size: 1.6em;
+    line-height: 1.4em;
+    font-family: 'a_futuraroundbold';
+    color: #000;
+}
+
+.l-region--header .block--custom-fun .custom-fan-mail-wr {
+    padding-left: 18px;
+    line-height: 1.2em;
+    font-size: 1em;
+}
+
+.l-region--header .block--custom-fun .custom-fan-mail-wr a {
+    color: #585858;
+}
+
+.l-region--header .block--custom-fun .custom-fan-mail-wr a:hover {
+    text-decoration: none;
+}
+
+.l-region--header .block--custom-fun .custom-fan-work-wr {
+    padding-left: 18px;
+    padding-top: .4rem;
+    line-height: 1.2em;
+    background: url(../images/icon-contact-work.png) left .5rem no-repeat;
+    font-family: 'a_futuraroundregular';
+}
+
+.breadcrumb a, .breadcrumb span {
+    float: left;
+}
+
+.pik-bread-sep {
+    display: inline-block;
+    width: 26px;
+    text-align: left;
+    text-indent: -999px;
+    overflow: hidden;
+    background: url(../images/icon-breadcrumb-sep.png) center center no-repeat;
+}
+
+h1.page-title {
+    padding-bottom: .85em;
+    margin-bottom: 11px;
+    background: url(../images/dot-grey.png) left bottom repeat-x;
+}
+
+.front.page-catalog h1.page-title {
+    padding-top: 36px;
+}
+
+.trade-catalog-search {
+    padding-bottom: 0;
+    background: none;
+}
+
+.l-region--footer-first .block {
+    float: left;
+    width: 50%;
+}
+
+.l-footer, .l-footer h3 {
+    color: #fff;
+}
+
+.l-footer .block h3 {
+    color: #fff;
+    font-size: 1.1rem;
+    line-height: 1.1rem;
+    text-transform: uppercase;
+    margin-bottom: 1.3em
+}
+
+.l-footer .menu, .l-footer ol, .l-footer ul {
+    padding: 0;
+}
+
+.l-footer .menu li {
+    line-height: 1.645rem;
+}
+
+.l-footer ul {
+    margin: 0;
+}
+
+.l-footer .menu .leaf {
+    list-style-image: none;
+    list-style-type: none;
+}
+
+.l-footer a, .l-footer a:visited, .l-footer a:link {
+    color: #fff;
+    text-decoration: none;
+}
+
+.l-footer a:hover, .l-footer a.active {
+    color: #cfe484;
+}
+
+.pik-copyright {
+    text-align: right;
+}
+
+.custom-fan-address-wr,
+.custom-fan-phones-wr {
+    padding-left: 25px;
+    line-height: 1.454em;
+    font-size: 1.1rem;
+}
+
+.custom-fan-address-wr {
+    background: url(../images/icon-address.png) left 4px no-repeat;
+    padding-bottom: 2.2rem;
+}
+
+.custom-fan-phones-wr {
+    background: url(../images/icon-phone.png) left top no-repeat;
+    padding-bottom: 1.3rem;
+}
+
+.pik-copyright .block__content {
+    line-height: 2rem;
+}
+
+.block--social-likes .block__content {
+    margin-top: 6px;
+    margin-bottom: 27px;
+}
+
+.block--social-likes .social-likes_notext .social-likes__widget {
+    float: left;
+    margin: 0 0 6px 6px;
+}
+
+.block--social-likes .social-likes__button {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    line-height: 49px;
+    width: 49px;
+    height: 49px;
+    border: none;
+    outline: 0;
+    background: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -o-box-shadow: none;
+    box-shadow: none;
+}
+
+.block--social-likes .social-likes__icon {
+    line-height: 49px;
+    width: 49px;
+    height: 49px;
+    transition-duration: 1s;
+}
+
+.block--social-likes .social-likes__icon:hover {
+    opacity: .9;
+    transition-duration: 1s;
+}
+
+.block--social-likes .social-likes__button .social-likes__icon_facebook {
+    background: url(../images/icon-social.png) 0 0 no-repeat;
+}
+
+.block--social-likes .social-likes__button .social-likes__icon_twitter {
+    background: url(../images/icon-social.png) -54px 0 no-repeat;
+}
+
+.block--social-likes .social-likes__button .social-likes__icon_vkontakte {
+    background: url(../images/icon-social.png) -109px 0 no-repeat;
+}
+
+.block--social-likes .social-likes__button .social-likes__icon_odnoklassniki {
+    background: url(../images/icon-social.png) -163px 0 no-repeat;
+}
+
+.l-footer .block--social-likes {
+    text-align: right;
+}
+
+.custom-fan-mail-wr a {
+    font-family: 'a_futuraroundregular';
+}
+
+.l-region .block {
+    margin-bottom: .5em;
+}
+
+.l-region--sidebar-first .block {
+    margin-bottom: 2em;
+}
+
+.trade-product-gallery-right .inside {
+    padding-right: 5%;
+}
+
+/* .pane-node-trade-product-option-upholstery-picker */
+.trade-one-row .trade-two-cell .trade-extra-field-upholstery {
+    float: right;
+    text-align: right;
+    padding: 0 15px 0 0;
+}
+
+.trade-product-option-upholstery-picker-container {
+    display: inline-block;
+    text-align: left;
+}
+
+.trade-view-mode-collections_elements .panels-flexible-region-2-three_region,
+.trade-view-mode-collections_elements .panels-flexible-region-2-two_region,
+.trade-view-mode-collections_elements .first-row .panels-flexible-region-first {
+    border-top: 1px solid transparent;
+}
+
+.trade-product-dimensions {
+    display: table;
+}
+
+.trade-product-dimensions .field {
+    display: table-row;
+}
+
+.trade-product-dimensions .field__label,
+.trade-product-dimensions .field-label {
+    font-weight: normal !important;
+}
+
+.trade-product-dimensions .field__label,
+.trade-product-dimensions .field__items,
+.trade-product-dimensions .field-label,
+.trade-product-dimensions .field-items {
+    display: table-cell;
+}
+
+.page-node .field--name-field-related-products > .field__items > .field__item {
+    /*display: inline-block;*/
+    vertical-align: top;
+}
+
+div.node.node-teaser.node-product {
+    width: 170px;
+    margin: 0 1.428rem 1.428rem 0;
+    display: inline-block;
+    position: relative;
+}
+
+.trade-catalog-page div.node.node-teaser.node-product {
+    margin: 0 39px 39px 0;
+}
+
+div.node.node-teaser.node-product > .panel-flexible {
+    margin: 5px;
+}
+
+div.node.node-teaser.node-product img {
+    max-width: 160px;
+}
+
+div.panel-pane div.node.node-teaser.node-product {
+    width: 170px;
+    max-width: 170px;
+    margin: 0 1.428rem 1.428rem 0;
+    display: inline-block;
+}
+
+/* .pik-product-full-add-to-cart-region .trade-product-price */
+.trade-one-row .trade-two-cell .trade-product-price {
+    font-family: 'ikea_sansbold';
+    font-size: 2.6rem;
+    line-height: 2em;
+}
+
+/* .pik-product-full-add-to-cart-region .trade-separator-with .trade-product-price {
+    background: url(../images/price-line.png) repeat-x 0 bottom;
+}
+*/
+
+.trade-one-row .trade-two-cell .trade-product-full-segment.trade-full-segment-1,
+.trade-one-row .trade-two-cell .trade-product-full-segment.trade-full-segment-2 {
+    padding-top: 2rem;
+    background: url(../images/price-line.png) repeat-x 0 top;
+}
+
+.trade-vertical-tabs-collections-wr {
+    padding-bottom: .5rem;
+    background: url(../images/price-line.png) repeat-x 0 bottom;
+}
+
+.pik-product-full-add-to-cart-region .pane-node-trade-product-add-to-order {
+    padding-top: 2rem !important;
+    margin-top: 0;
+    background: url(../images/price-line.png) repeat-x 0 top;
+}
+
+.pik-product-page-row .pik-left-side-region,
+.pik-product-page-row .pik-right-side-region {
+    width: 50% !important;
+}
+
+.panels-flexible-1 .pik-left-side-region > .panels-flexible-region-inside-first {
+    padding-left: 0;
+    padding-right: 5%;
+}
+
+.panels-flexible-1 .pik-right-side-region > .panels-flexible-region-inside-last {
+    padding-left: 5%;
+    padding-right: 0;
+}
+
+.trade-one-row .trade-table-cell .trade-cell-inner {
+    margin-bottom: .5rem;
+}
+
+.pik-product-page-second-row .pik-left-side-region,
+.pik-product-page-second-row .pik-right-side-region {
+    margin-top: 0 !important;
+}
+
+h2.pane-title,
+h2.trade-extra-field-title,
+.node-full .trade-one-row .trade-two-cell .trade-full-segment > .field > .field__label,
+.node-full .trade-two-row .trade-one-cell .trade-full-segment-0 > .field > .field__label,
+.trade-product-service-field-title,
+.trade-extra-field-title {
+    font-size: 1rem;
+    letter-spacing: .02rem;
+    line-height: 1rem;
+    margin-top: 0;
+    color: #585858;
+    font-family: 'ikea_sansregular';
+    text-transform: uppercase;
+}
+
+.node-full .trade-one-row .trade-two-cell .field {
+    padding-top: 1rem;
+}
+
+.trade-two-row .trade-full-segment.trade-full-segment-1 .trade-product-node-list {
+    background: url('../images/price-line.png') repeat-x scroll 0px top transparent;
+    padding-top: 9px;
+}
+
+.trade-two-cell .trade-full-segment.trade-full-segment-1 {
+    background: url('../images/price-line.png') repeat-x scroll 0px top transparent;
+    padding-top: 2rem;
+}
+
+.field {
+    font-size: 1.01rem;
+    line-height: 1.637rem;
+}
+
+.field--name-field-collections-elements .field {
+    margin-bottom: .5em;
+}
+
+.trade-product .field.field--name-field-collections-elements > .field-label,
+.trade-product .field.field--name-field-collections-elements > .field__label,
+.trade-product .field--name-field-related-products > .field-label,
+.trade-product .field--name-field-related-products > .field__label {
+    float: none;
+    display: block;
+    font-size: 2em;
+    line-height: 1.6em;
+}
+
+.trade-product-category-price {
+    text-align: right;
+}
+
+ul.trade-vertical-list li {
+    white-space: nowrap;
+    overflow: auto;
+}
+
+ul.trade-vertical-list .trade-product-category-price {
+    font-family: 'ikea_sansbold';
+}
+
+ul.trade-vertical-list {
+    display: table;
+}
+
+ul.trade-vertical-list .trade-product-category-price-wr {
+    text-align: right;
+}
+
+ul.trade-vertical-list li {
+    padding-bottom: .2rem;
+    display: table-row;
+}
+
+ul.trade-vertical-list a {
+    display: table-cell;
+    color: #585858;
+    border-bottom: 1px dashed #bcbcbc;
+    text-decoration: none;
+    padding-bottom: 1px;
+}
+
+ul.trade-vertical-list a:hover,
+ul.trade-vertical-list a.trade-state-active {
+    border-bottom: 2px solid #99cf51;
+    text-decoration: none;
+    padding-bottom: 0;
+}
+
+ul.trade-vertical-list a:active, ul.trade-vertical-list a:link, ul.trade-vertical-list a:visited {
+    text-decoration: none;
+}
+
+.button {
+    background: url(../images/button-arrow.png) no-repeat 93% center, url(../images/button-bg.png) repeat-x left center;
+    -webkit-border-radius: 18px;
+    -moz-border-radius: 18px;
+    -ms-border-radius: 18px;
+    -o-border-radius: 18px;
+    border-radius: 18px;
+    display: inline-block;
+    height: 2.5rem;
+    margin: 0px;
+    padding: 0px 1.8em 0 1em;
+    background-color: transparent;
+    border: medium none;
+    color: #FFF;
+    font-family: 'ikea_sansregular';
+    font-size: 100%;
+    line-height: 2.2rem;
+    letter-spacing: 0.1rem;
+    text-transform: uppercase;
+    vertical-align: baseline;
+    white-space: nowrap;
+    overflow: visible;
+    cursor: pointer;
+    text-shadow: 1px 0 0 #fff;
+}
+
+.trade-view-mode-teaser .trade-product-add-to-order-buy,
+.field--name-field-collections-elements .trade-product-add-to-order-buy {
+    background: url(../images/button-bg.png) repeat-x left center;
+    padding: 0px 1em;
+}
+
+.button:hover {
+    background-color: #fff;
+}
+
+.form-item.form-item-trade-product-add-to-order-quantity,
+.form-item.trade-spinner-container {
+    padding: 2px 0;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.form-item.form-item-trade-product-add-to-order-quantity .form-text,
+.form-item.trade-spinner-container .form-text {
+    padding: 0;
+    background-color: #FFF;
+    border: none;
+    color: #585858;
+    display: inline-block;
+    vertical-align: baseline;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+    border-radius: 5px;
+}
+
+.trade-view-mode-collections_elements .form-item.form-item-trade-product-add-to-order-quantity {
+    line-height: 1.35rem;
+    margin-bottom: 1em;
+    margin-left: .15rem;
+}
+
+.trade-view-mode-collections_elements .form-item.form-item-trade-product-add-to-order-quantity .form-text {
+    line-height: 1.35rem;
+}
+
+.trade-view-mode-collections_elements .button {
+    line-height: 1.6rem;
+    height: 1.6rem;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    -ms-border-radius: 4px;
+    -o-border-radius: 4px;
+    border-radius: 4px;
+    padding: 0px .3rem 0 .3rem;
+    background: url(../images/button-bg.png) repeat-x left center;
+    color: #ecf5e2;
+}
+
+.trade-view-mode-collections_elements .trade-product-add-to-order-actions {
+    margin-bottom: 1em;
+    line-height: 1.6rem;
+}
+
+ul.trade-horizontal-list a.trade-nav-link {
+    font-family: 'ikea_sansbold';
+    text-transform: uppercase;
+    text-decoration: none;
+    -webkit-border-radius: 17px;
+    -moz-border-radius: 17px;
+    -ms-border-radius: 17px;
+    -o-border-radius: 17px;
+    border-radius: 17px;
+    padding: 0 .7em;
+    margin-right: .5em;
+    display: inline-block;
+    line-height: 2.5em;
+    color: #585858;
+}
+
+ul.trade-horizontal-list a.trade-nav-link:hover,
+ul.trade-horizontal-list a.trade-nav-link.trade-state-active {
+    background-color: #286686;
+    color: #fff;
+}
+
+.trade-product-upholster-picker-material-view .trade-product-title {
+    font-family: 'ikea_sansbold';
+    margin: .7rem 0;
+    height: 1.42857em;
+    overflow: hidden;
+    text-align: left;
+}
+
+.trade-product-upholster-picker-material-view .trade-thumb-wr {
+    margin-bottom: .5rem;
+}
+
+.trade-product-upholster-picker-material .form-item label {
+    font-size: .85em;
+}
+
+.trade-vertical-tabs-materials-wr .trade-float-list {
+    text-align: justify;
+}
+
+.trade-table-row.trade-two-row {
+    background: url(../images/dot-grey.png) left top repeat-x;
+}
+
+.trade-two-row .trade-table-cell .trade-full-cell-inner {
+    margin-top: 1.8rem;
+}
+
+.trade-two-row .trade-product-full-table-row-cell.trade-one-cell > .trade-cell-inner {
+    background: url(../images/region-bg.png) right 1.8rem repeat-y;
+}
+
+.field--name-field-collections-elements > .field__items,
+.field--name-field-related-products > .field__items,
+.group-second-row .trade-container-cell .trade-container-inner {
+    background: url('../images/price-line.png') repeat-x scroll 0px top transparent;
+    padding-top: 9px;
+}
+
+.group-second-row .trade-container-cell .trade-container-inner,
+.field--name-field-collections-elements > .field__items,
+.field--name-field-related-products > .field__items {
+    padding-top: 18px;
+}
+
+.group-second-row.trade-4-cell-row .trade-container-cell .trade-container-inner {
+    background: none;
+    padding-top: 0;
+}
+
+.trade-view-mode-collections_elements .field--name-field-product-catalog-title {
+    margin: 0;
+}
+
+.trade-view-mode-collections_elements .field--name-field-product-catalog-title a {
+    color: #585858;
+    font-family: 'ikea_sansbold';
+}
+
+div.panel-pane div.node.trade-view-mode-collections_elements {
+    margin-top: 1.5em;
+    border-bottom: 1px solid #bed1da;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-left-region {
+    width: 50%;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-2-region {
+    width: 50%;
+    min-height: 110px;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-2-region > .panels-flexible-region-inside {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-3-region {
+    width: 50%;
+    clear: left;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-3-region > .panels-flexible-region-inside {
+    padding-left: 0;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-4-region {
+    width: 50%;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-4-region > .panels-flexible-region-inside {
+    padding-left: 0;
+}
+
+@media (min-width: 96em) {
+
+    div.panel-pane div.node.node-collections-elements {
+        border-bottom: none;
+    }
+
+    div.panel-pane div.node.node-collections-elements {
+        margin-top: 1.5em;
+    }
+
+    .node-collections-elements .pik-collections-elements-left-region {
+        width: 26%;
+    }
+
+    .node-collections-elements .pik-collections-elements-2-region {
+        width: 25.5%;
+    }
+
+    .node-collections-elements .pik-collections-elements-2-region > .panels-flexible-region-inside {
+        padding-left: 0;
+        padding-right: .5em;
+    }
+
+    .node-collections-elements .pik-collections-elements-3-region {
+        width: 17.7%;
+        clear: none;
+    }
+
+    .node-collections-elements .pik-collections-elements-3-region > .panels-flexible-region-inside {
+        border-left: 1px solid #bed1da;
+        padding-left: .5em;
+    }
+
+    .node-collections-elements .pik-collections-elements-4-region {
+        width: 30.8%;
+    }
+
+    .node-collections-elements .pik-collections-elements-4-region > .panels-flexible-region-inside {
+        border-left: 1px solid #bed1da;
+        padding-left: .5em;
+    }
+}
+
+.pik-collections-elements-right-region > .panels-flexible-region-inside {
+    padding-left: 0;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-2-region > .panels-flexible-region-inside {
+    padding-left: 0;
+}
+
+.trade-view-mode-collections_elements .trade-product-price {
+    font-family: 'ikea_sansbold';
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    margin-top: .1rem;
+}
+
+.trade-view-mode-collections_elements h2.pane-title {
+    margin-top: 0;
+}
+
+.trade-view-mode-collections_elements .pik-collections-elements-3-region h2.pane-title {
+    font-family: 'ikea_sansregular';
+    text-transform: none;
+    font-size: 1.01rem;
+    line-height: 1.637rem;
+}
+
+.trade-view-mode-collections_elements .trade-product-option-color-picker .form-item-field-product-color {
+    display: inline-block;
+    text-align: center;
+    padding-right: 0;
+}
+
+.trade-product-color-picker-option-preview-wr-text {
+    background-color: #FCE708;
+    padding: .7em 1em;
+    font-family: 'ikea_sansbold';
+}
+
+.pik-right-side-region .pane-node-field-related-products {
+    padding-top: 9px;
+    background: url('../images/price-line.png') repeat-x scroll 0px top transparent;
+
+}
+
+.node-teaser .field--name-field-product-catalog-title a,
+.node-teaser .field-name-field-product-catalog-title a {
+    font-family: 'ikea_sansbold';
+    text-transform: uppercase;
+    color: #585858;
+    text-decoration: none;
+    font-size: .95rem;
+}
+
+.node-teaser .field--name-field-product-catalog-title a:hover,
+.node-teaser .field-name-field-product-catalog-title a:hover {
+    text-decoration: underline;
+}
+
+.node-teaser .field--name-field-product-type {
+    font-size: .95rem;
+}
+
+.node-teaser .trade-product-price,
+.field--name-field-collections-elements .trade-product-price {
+    font-family: 'ikea_sansbold';
+    font-size: 1.7rem;
+    padding-bottom: .7rem;
+    white-space: nowrap;
+}
+
+.node-teaser .field {
+    margin-bottom: .71rem;
+}
+
+.node-teaser .field--name-field-product-images .field__item {
+    text-align: center;
+}
+
+.trade-product-full-table .trade-two-row .trade-one-cell .trade-full-segment-0 .field--type-text .field__label,
+.trade-product-full-table .trade-two-row .trade-one-cell .trade-full-segment-0 .field--type-taxonomy-term-reference .field__label {
+    float: left;
+    margin-top: 0;
+    line-height: 1.637rem;
+    margin-right: 1em;
+}
+
+.trade-product-full-table .trade-two-row .trade-one-cell .trade-full-segment-0 .field--type-text .field__items,
+.trade-product-full-table .trade-two-row .trade-one-cell .trade-full-segment-0 .field--type-taxonomy-term-reference .field__items {
+    float: left;
+}
+
+.trade-product-full-table .trade-two-row .trade-one-cell .trade-full-segment-0 .trade-extra-field,
+.trade-product-full-table .trade-two-row .trade-one-cell .trade-full-segment-0 .field {
+    margin-bottom: .714em;
+    overflow: hidden;
+}
+
+.trade-list-boolean-checked {
+    padding-left: 21px;
+    background: url(../images/icon-ok.png) left center no-repeat;
+}
+
+.feed-icon {
+    display: block;
+    clear: both;
+}
+
+.feed-icon img {
+    vertical-align: baseline;
+}
+
+.trade-product-dimensions .field__item {
+    white-space: nowrap;
+}
+
+.search-block-form .form-text,
+.trade-catalog-search .form-text {
+    background-color: #FFF;
+    border: 1px solid #e9f2dd;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    -ms-border-radius: 15px;
+    -o-border-radius: 15px;
+    border-radius: 15px;
+    width: 212px;
+}
+
+.search-block-form .container-inline div,
+.trade-catalog-search div {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.trade-catalog-search label {
+    width: 100%;
+    display: block;
+    clear: both;
+    margin-bottom: 1rem;
+}
+
+.trade-catalog-search .form-item {
+    margin: 0;
+}
+
+.search-block-form .button,
+.trade-catalog-search .button {
+    background: url(../images/icon-search.png) no-repeat center center;
+    width: 30px;
+    text-indent: -9999px;
+    padding: 0;
+    height: auto;
+    line-height: 30px;
+    margin-top: 0;
+    margin-left: 10px;
+}
+
+.search-block-form .form-item, .search-block-form .form-actions {
+    margin-bottom: 0;
+}
+
+.search-block-form .button:active,
+.search-block-form .button:focus,
+.trade-catalog-search .button:active,
+.trade-catalog-search .button:focus {
+    outline: none;
+    -webkit-box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    -o-box-shadow: none !important;
+    box-shadow: none !important;
+}
+
+.form-type-checkbox.form-disabled label {
+    color: #999;
+}
+
+.node-teaser.node-product {
+}
+
+.node-teaser.node-product .panel-flexible {
+    position: relative;
+}
+
+.node-teaser.node-product .panel-flexible-inside {
+    position: absolute;
+    /*
+    -webkit-transition: box-shadow .5s ease-out .1s;
+    -moz-transition: box-shadow .5s ease-out .1s;
+    -o-transition: box-shadow .5s ease-out .1s;
+    -ms-transition: box-shadow .5s ease-out .1s;
+    transition: box-shadow .5s ease-out .1s;
+    */
+}
+
+.node-teaser.node-product .panel-flexible-inside:hover {
+    margin: -10px -10px -10px -10px;
+    z-index: 999;
+    padding: 10px 0 10px 0;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -o-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.node-teaser.node-product .panel-flexible-inside:hover .panels-flexible-row {
+    margin-left: 10px;
+    margin-right: 10px;
+    padding-bottom: 0;
+}
+
+.node-teaser.node-product .pik-hover-visible-row {
+    display: none;
+
+}
+
+/* .node-teaser.node-product .pik-hover-visible-row .panel-pane:first-child */
+.trade-view-mode-teaser .trade-product-view-hover-visible-wr {
+    padding-top: 1.5rem;
+    background: url('../images/price-line.png') repeat-x scroll 0px top transparent;
+}
+
+.node-teaser.node-product .panel-flexible-inside:hover .pik-hover-visible-row {
+    display: block;
+}
+
+.trade-catalog-page-sort {
+    position: absolute;
+    right: 0;
+    top: 35px;
+}
+
+.trade-catalog-page-sort {
+    font-family: 'ikea_sansregular';
+}
+
+.trade-catalog-page-sort h3, .trade-catalog-page-sort a {
+    font-family: 'ikea_sansregular';
+    font-size: 1.2rem;
+    line-height: 2rem;
+    text-decoration: none;
+    text-transform: lowercase;
+    font-weight: normal;
+}
+
+.trade-catalog-page-sort a span {
+    display: inline-block;
+    vertical-align: baseline;
+    line-height: 1.2rem;
+}
+
+.trade-catalog-page-sort a {
+    display: inline-block;
+    border: 1px solid transparent;
+    padding: 0 1rem;
+
+}
+
+.trade-catalog-page-sort a.trade-sort-active {
+    border: 1px solid #eef5e4;
+    -webkit-border-radius: 1rem;
+    -moz-border-radius: 1rem;
+    -o-border-radius: 1rem;
+    border-radius: 1rem;
+}
+
+.l-main ul.menu {
+    padding: 0;
+    margin: 0;
+}
+
+.l-main ul.menu ul.menu {
+    padding: 10px 0px 10px 10px;
+}
+
+.l-main ul.menu {
+    list-style-type: none;
+}
+
+.l-main ul.menu .expanded,
+.l-main ul.menu .collapsed {
+    list-style-image: none;
+    list-style-type: none;
+}
+
+.l-main ul.menu a, .l-main ul.menu a:link {
+    font-family: 'ikea_sansregular';
+    color: #286686;
+    font-size: 1.4rem;
+    line-height: 2.4rem;
+    text-decoration: none;
+    padding: 0 1rem;
+    display: inline-block;
+}
+
+.l-main ul.menu .leaf a span {
+    border-bottom: 4px solid transparent;
+}
+
+.l-main ul.menu .leaf a.active span,
+.l-main ul.menu .leaf a:hover span {
+    border-bottom: 4px solid #99cf51;
+}
+
+.l-main ul.menu .expanded a.active-trail,
+.l-main ul.menu .expanded > a.active {
+    color: #fff;
+    background-color: #286686;
+    -webkit-border-radius: 1.3rem;
+    -moz-border-radius: 1.3rem;
+    -o-border-radius: 1.3rem;
+    border-radius: 1.3rem;
+}
+
+.l-main ul.menu .leaf {
+    list-style-image: none;
+    list-style-type: none;
+}
+
+.l-main ul.menu .expanded,
+.l-main ul.menu .collapsed {
+    background: url(../images/menu-arrow.png) no-repeat 0 .8rem;
+    padding-left: 0;
+}
+
+.l-main ul.menu .leaf {
+    background: url(../images/menu-leaf.png) no-repeat 0 .5rem;
+    padding-left: 1rem;
+}
+
+.trade-catalog-filters {
+    background-color: #ceeff6;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.trade-catalog-filters .form-type-checkboxes label:first-child,
+.trade-catalog-filters label.trade-field-title {
+    font-family: 'ikea_sansbold';
+    font-size: 1.2rem;
+    font-weight: normal;
+    text-transform: uppercase;
+    color: #465254;
+    margin-bottom: .4rem;
+}
+
+.trade-catalog-filters .description a {
+    text-transform: lowercase;
+    font-size: 1.1rem;
+}
+
+.trade-catalog-filters .form-item-field-price--from label,
+.trade-catalog-filters .form-item-field-price--to label,
+.trade-catalog-filters label.trade-field-suffix,
+.trade-numeric-slider-form-item .form-type-textfield label {
+    font-weight: normal;
+}
+
+.trade-catalog-filters label.trade-field-suffix {
+    position: absolute;
+    margin-top: 27px;
+    margin-left: 5px;
+}
+
+.trade-catalog-filters .form-item-field-price--from label,
+.trade-catalog-filters .form-item-field-price--to label,
+.trade-numeric-slider-form-item .form-type-textfield label {
+    display: block;
+}
+
+.trade-catalog-filters .trade-field-price-form-item .form-item .form-text,
+.trade-catalog-filters .trade-numeric-slider-form-item .form-item .form-text {
+    padding: .2em .4em;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    -o-border-radius: 12px;
+    border-radius: 12px;
+    border: none;
+}
+
+.ui-slider .ui-slider-handle {
+    width: 1em;
+    height: 1.2em;
+    cursor: default;
+}
+
+.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+    border: none;
+    background-image: none;
+    background-color: #286686;
+    font-weight: 400;
+    color: #555;
+}
+
+.ui-widget-content {
+    border: 1px solid transparent;
+    background-image: none;
+    background-color: #aedef8;
+}
+
+.ui-widget-header {
+    background-color: #99cf51;
+    background-image: none;
+}
+
+.trade-price-slider-widget,
+.trade-numeric-slider-widget {
+    display: block !important;
+    margin: .5rem 0 1.5rem .5rem;
+}
+
+.trade-catalog-page {
+    padding-top: 1rem;
+}
+
+.pik-animation-region-link {
+    overflow: hidden;
+}
+
+.pik-animation-region-link a, .pik-animation-region-link a:link, .pik-animation-region-link a:active {
+    float: left;
+    padding: 0;
+    font-size: 1.4rem;
+    line-height: 37px;
+    height: 37px;
+    color: #fff;
+    text-decoration: none;
+    background: url(../images/blue-point.png) 0 0;
+    -webkit-border-radius: 0 0 20px 20px;
+    -moz-border-radius: 0 0 20px 20px;
+    -o-border-radius: 0 0 20px 20px;
+    border-radius: 0 0 20px 20px;
+}
+
+.pik-icon {
+    float: left;
+    width: 37px;
+    height: 37px;
+    border-radius: 37px;
+    line-height: 37px;
+    background: url(../images/w-arrow.png) center center no-repeat;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+.pik-text {
+    float: left;
+    height: 37px;
+    line-height: 37px;
+}
+
+.pik-top-rotation {
+    float: left;
+    width: 15px;
+    height: 37px;
+}
+
+.pik-link-is-active .pik-icon {
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
+
+.trade-product-option-color-viewer .trade-product-option-color-picker .form-item-field-product-color {
+    padding-right: .1em;
+}
+
+.trade-product-option-color-viewer .field-product-color {
+    text-align: center;
+}
+
+.trade-view-mode-collections_elements .field-product-color {
+    text-align: left;
+}
+
+.pane-node-field-related-products .field--name-field-related-products {
+    padding-top: 1rem;
+}
+
+/* .node-teaser .pane-node-trade-product-dimensions .pane-title */
+.trade-view-mode-teaser .trade-product-dimensions-field h2.trade-extra-field-title {
+    color: #688ca2;
+    font-style: italic;
+    text-transform: lowercase;
+    font-weight: normal;
+}
+
+.trade-catalog-page-sort a.trade-sort-asc span {
+    padding-right: 15px;
+    background: url(../images/sort-asc-icon.png) no-repeat right 60% transparent;
+}
+
+.trade-catalog-page-sort a.trade-sort-desc span {
+    padding-right: 15px;
+    background: url(../images/sort-desc-icon.png) no-repeat right 60% transparent;
+}
+
+.trade-actions {
+    border-top: 2px solid #add4e0;
+    text-align: justify;
+}
+
+.trade-actions .button + .button, .trade-actions .button + a {
+    margin-left: 3px;
+}
+
+.trade-actions .button {
+    margin-top: 15px;
+}
+
+.trade-actions .button {
+    padding: 0px 1.6em 0px .8em;
+}
+
+/*
+.flexslider .slides img,
+img.trade-product-gallery-nav-link {
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    -ms-filter: grayscale(100%);
+    -o-filter: grayscale(100%);
+    filter: grayscale(100%);
+    filter: gray;
+    filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+    -webkit-transition: all .6s ease;
+    -moz-transition: all .6s ease;
+    -ms-transition: all .6s ease;
+    -o-transition: all .6s ease;
+    transition: all .6s ease;
+}
+
+.flexslider .slides img:hover,
+img.trade-product-gallery-nav-link.flex-active,
+img.trade-product-gallery-nav-link:hover {
+    filter: grayscale(0%);
+    -webkit-filter: grayscale(0%);
+    filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'1 0 0 0 0, 0 1 0 0 0, 0 0 1 0 0, 0 0 0 1 0\'/></filter></svg>#grayscale");
+}
+*/
+
+.form-item .form-select.error, .form-item .form-text.error, .form-item .form-textarea.error {
+    border: 1px solid red;
+}
+
+.block--trade-cart {
+    width: 125px;
+    height: 118px;
+    overflow: hidden;
+}
+
+.trade-cart-block-inner a {
+    display: block;
+    height: 116px;
+    padding: 43px 45px 33px 89px;
+    text-align: left;
+}
+
+.trade-cart-block-inner a.trade-cart-empty {
+    line-height: 40px;
+}
+
+.trade-cart-block-inner a span {
+    display: none;
+}
+
+@media (min-width: 70em) {
+    .block--trade-cart {
+        width: 245px;
+    }
+
+}
+
+@media (min-width: 70em) {
+    .block--trade-cart {
+        margin-right: 0;
+    }
+
+    .block--trade-quick-search {
+        margin-right: 245px;
+    }
+}
+
+@media (min-width: 70em) {
+    .trade-cart-block-inner a {
+        margin-right: 0;
+    }
+
+    .trade-cart-block-inner a span {
+        display: inline-block;
+    }
+}
+
+@media (min-width: 100em) {
+
+    .block--trade-quick-search {
+        margin-right: 345px;
+    }
+}
+
+.trade-cart-block-inner a span.trade-cart-item-title {
+    text-decoration: underline;
+
+}
+
+.trade-cart-block-inner a span.trade-cart-item-value {
+    text-decoration: none;
+    padding-left: .5rem;
+}
+
+.trade-cart-block-inner a:hover span.trade-cart-item-title {
+    text-decoration: none;
+}
+
+.panel-pane.pane-entity-field-extra.pane-node-trade-product-price {
+    padding-bottom: 0;
+}
+
+.pik-product-page-row .panels-flexible-region-inside-last .panel-pane.pane-entity-field-extra:first-child {
+    padding-top: 0;
+}
+
+.pik-product-page-row .panels-flexible-region-inside-last .pane-node-field-related-products .panel-pane.pane-entity-field-extra:first-child {
+    padding-top: 1rem;
+}
+
+.trade-product-color-picker-option-thumb-title {
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+/* .panel-pane.pane-entity-field-extra.pane-node-trade-product-option-upholstery-picker */
+.trade-one-row .trade-two-cell .trade-extra-field-upholstery {
+    background-color: #fff;
+}
+
+.trade-product-service .trade-table-row .trade-cell-inner {
+    margin-bottom: .714em;
+}
+
+.trade-product-full-grid .trade-one-row .trade-grid-cell {
+    width: 100%;
+    padding-top: 1rem;
+    padding-bottom: .5rem;
+}
+
+.trade-product-full-grid .trade-segment-inner .field {
+    margin-bottom: 0;
+}
+
+/* 765 */
+
+.trade-product-full-grid .trade-one-row .trade-grid-cell .trade-cell-inner {
+    padding-left: 0;
+}
+
+.trade-product-full-grid .trade-two-row .trade-one-cell {
+    width: 100%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.trade-product-full-grid .trade-two-row .trade-one-cell .trade-cell-inner {
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #bed1da;
+}
+
+.trade-product-full-grid .trade-two-row .trade-two-cell {
+    width: 100%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.trade-product-full-grid .trade-two-row .trade-two-cell .trade-cell-inner {
+    padding-bottom: 0;
+    padding-top: 1rem;
+    border-bottom: 1px solid #bed1da;
+}
+
+.trade-4-cell-row .trade-container-cell .trade-container-inner {
+    border-left: 1px solid #bed1da;
+}
+
+.trade-4-cell-row .trade-container-cell:first-child .trade-container-inner {
+    border-left: none;
+}
+
+.trade-product-full-grid .trade-two-row .trade-one-cell .trade-segment-0,
+.trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-0 {
+    width: 49%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.trade-product-full-grid .trade-two-row .trade-one-cell .trade-segment-1,
+.trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-1 {
+    width: 51%;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-0 {
+    width: 49%;
+}
+
+.trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-1 {
+    width: 51%;
+}
+
+.trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-0 .trade-segment-inner {
+    padding-right: .5rem;
+    padding-left: 0;
+    padding-bottom: 1rem;
+}
+
+.trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-0.trade-empty-segment-no .trade-segment-inner {
+    border-left: none;
+    overflow: hidden;
+}
+
+.trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-1 .trade-segment-inner {
+    border-left: none;
+}
+
+.trade-product-full-grid .trade-two-row .trade-one-cell .trade-segment-0 .trade-segment-inner {
+    padding-right: .5rem;
+}
+
+.trade-product-full-grid .trade-two-row .trade-one-cell .trade-segment-1 .trade-segment-inner {
+    padding-right: .5rem;
+}
+
+/* end 765 */
+
+@media (min-width: 96em) {
+
+    .trade-product-full-grid .trade-one-row .trade-grid-cell .trade-cell-inner {
+        padding-left: 27.5%;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-one-cell {
+        width: 52%;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-two-cell {
+        width: 48%;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-one-cell .trade-segment-0,
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-0 {
+        width: 53%;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-one-cell .trade-segment-1,
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-1 {
+        width: 47%;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-0 {
+        width: 37%;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-1 {
+        width: 63%;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-0 .trade-segment-inner {
+        padding-right: .5rem;
+        padding-left: .5rem;
+        padding-bottom: 0;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-0.trade-empty-segment-no .trade-segment-inner {
+        border-left: 1px solid #bed1da;
+        min-height: 71px;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-segment-1 .trade-segment-inner {
+        border-left: 1px solid #bed1da;
+        padding-left: .5rem;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-one-cell .trade-cell-inner {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-cell-inner {
+        padding-bottom: 0;
+        padding-top: 0;
+        border-bottom: none;
+    }
+
+    .trade-product-full-grid .trade-two-row .trade-two-cell .trade-cell-inner {
+        padding-bottom: 0;
+        padding-top: 0;
+        border-bottom: none;
+    }
+}
+
+.trade-product-full-grid .trade-one-row .trade-grid-cell .trade-cell-inner .field {
+    margin-bottom: 0;
+}
+
+.trade-product-full-grid .trade-one-row .trade-grid-cell .trade-cell-inner a {
+    color: #585858;
+    font-family: 'ikea_sansbold';
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+
+.trade-product-full-grid .trade-one-row .trade-grid-cell .trade-cell-inner a:hover {
+    text-decoration: underline;
+}
+
+.trade-view-mode-collections_elements .trade-product-option-color-picker .form-item-field-product-color {
+    padding-right: .1em;
+    float: left;
+}
+
+.trade-view-mode-collections_elements .trade-product-color-picker-option-thumb-image.trade-view-mode-mini img,
+.node-teaser .trade-product-option-color-viewer .trade-product-color-picker-option-thumb-image img {
+    height: 20px;
+    width: 20px;
+}
+
+.trade-product-teaser-list {
+    margin-top: 1rem;
+}
+
+.l-header .block--custom-fun-header-contact {
+    max-width: 290px;
+}
+
+h2.site-slogan {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+h1.site-name {
+    margin-top: 1.5rem;
+}
+
+.node-teaser .trade-extra-field,
+.field--name-field-collections-elements .trade-extra-field {
+    padding-top: 0;
+}
+
+.field--name-field-collections-elements .field--name-field-product-catalog-title a {
+    font-size: 1.8em;
+    line-height: 1.4em;
+}
+
+.ajax-progress .throbber {
+    background: url(../images/chrome_throbber_fast_16.gif) center center no-repeat;
+    position: absolute;
+    height: 16px;
+    margin: 2px;
+    width: 16px;
+}
+
+.ajax-progress {
+    position: absolute;
+    margin-left:-20px;
+}
+
+.rtl .ajax-progress {
+    position: absolute;
+    margin-right:-20px;
+}
+
+.ajax-progress .message {
+    display: none;
+}

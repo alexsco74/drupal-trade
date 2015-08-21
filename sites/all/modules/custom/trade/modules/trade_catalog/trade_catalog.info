@@ -1,0 +1,6 @@
+name = Trade catalog
+description = Trade catalog
+package = Custom
+version = VERSION
+core = 7.x
+configure = admin/config/trade/trade_catalog

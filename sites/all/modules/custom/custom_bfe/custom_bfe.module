@@ -1,0 +1,210 @@
+<?php
+
+function custom_bfe_theme_registry_alter(&$theme_registry) {
+  $m_path = drupal_get_path('module', 'custom_bfe');
+//select
+  $theme_registry['select']['theme path'] = $m_path;
+  $theme_registry['select']['function'] = 'theme_custom_bfe_select';
+//radios
+  $theme_registry['radios']['theme path'] = $m_path;
+  $theme_registry['radios']['function'] = 'theme_custom_bfe_radios';
+
+//checkboxes
+  $theme_registry['checkboxes']['theme path'] = $m_path;
+  $theme_registry['checkboxes']['function'] = 'theme_custom_bfe_checkboxes';
+
+//checkbox
+  $theme_registry['checkbox']['theme path'] = $m_path;
+  $theme_registry['checkbox']['function'] = 'theme_custom_bfe_checkbox';
+}
+
+/**
+ * Returns HTML for a checkbox form element.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #id, #name, #attributes, #checked, #return_value.
+ *
+ * @ingroup themeable
+ */
+function theme_custom_bfe_checkbox($variables) {
+  $element = $variables['element'];
+  $element['#attributes']['type'] = 'checkbox';
+  element_set_attributes($element, array('id', 'name', '#return_value' => 'value'));
+
+  // Unchecked checkbox has #value of integer 0.
+  if (!empty($element['#checked'])) {
+    $element['#attributes']['checked'] = 'checked';
+  }
+  _form_set_class($element, array('form-checkbox'));
+  return '<input' . drupal_attributes($element['#attributes']) . ' />';
+}
+
+/**
+ * Returns HTML for a set of checkbox form elements.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #children, #attributes.
+ *
+ * @ingroup themeable
+ */
+function theme_custom_bfe_checkboxes($variables) {
+  $element = $variables['element'];
+  $attributes = array();
+  if (isset($element['#id'])) {
+    $attributes['id'] = $element['#id'];
+  }
+  $attributes['class'][] = 'form-checkboxes';
+  if (!empty($element['#attributes']['class'])) {
+    $attributes['class'] = array_merge($attributes['class'], $element['#attributes']['class']);
+  }
+  if (isset($element['#attributes']['title'])) {
+    $attributes['title'] = $element['#attributes']['title'];
+  }
+  return '<div' . drupal_attributes($attributes) . '>' . (!empty($element['#children']) ? $element['#children'] : '') . '</div>';
+}
+
+/**
+ * Returns HTML for a select form element.
+ *
+ * It is possible to group options together; to do this, change the format of
+ * $options to an associative array in which the keys are group labels, and the
+ * values are associative arrays in the normal $options format.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #title, #value, #options, #description, #extra,
+ *     #multiple, #required, #name, #attributes, #size.
+ *
+ * @ingroup themeable
+ */
+function theme_custom_bfe_select($variables) {
+  $element = $variables['element'];
+  $element['#attributes']['class'][] = 'custom-bfe-select';
+  element_set_attributes($element, array('id', 'name', 'size'));
+  _form_set_class($element, array('form-select'));
+  return '<select' . drupal_attributes($element['#attributes']) . '>' . _custom_bfe_form_select_options($element) . '</select>';
+}
+
+/**
+ * Converts a select form element's options array into HTML.
+ *
+ * @param $element
+ *   An associative array containing the properties of the element.
+ * @param $choices
+ *   Mixed: Either an associative array of items to list as choices, or an
+ *   object with an 'option' member that is an associative array. This
+ *   parameter is only used internally and should not be passed.
+ *
+ * @return
+ *   An HTML string of options for the select form element.
+ */
+function _custom_bfe_form_select_options($element, $choices = NULL, $collect_key = '') {
+  if (!isset($choices)) {
+    $choices = $element['#options'];
+  }
+  // array_key_exists() accommodates the rare event where $element['#value'] is NULL.
+  // isset() fails in this situation.
+  $value_valid = isset($element['#value']) || array_key_exists('#value', $element);
+  $value_is_array = $value_valid && is_array($element['#value']);
+  $options = '';
+
+  foreach ($choices as $key => $choice) {
+
+    if (is_array($choice)) {
+      if (!empty($collect_key)) {
+        $curr_collect_key = "{$collect_key}_{$key}";
+      }
+      else {
+        $curr_collect_key = $key;
+      }
+      $options .= '<optgroup label="' . $key . '">';
+      $options .= _custom_bfe_form_select_options($element, $choice, $curr_collect_key);
+      $options .= '</optgroup>';
+    }
+    elseif (is_object($choice)) {
+      if (!empty($collect_key)) {
+        $curr_collect_key = "{$collect_key}_{$key}";
+      }
+      else {
+        $curr_collect_key = $key;
+      }
+      $options .= _custom_bfe_form_select_options($element, $choice->option, $curr_collect_key);
+    }
+    else {
+      $key = (string) $key;
+      if (!empty($collect_key)) {
+        $curr_collect_key = "{$collect_key}_{$key}";
+      }
+      else {
+        $curr_collect_key = $key;
+      }
+      if ($value_valid && (!$value_is_array && (string) $element['#value'] === $key || ($value_is_array && in_array($key, $element['#value'])))) {
+        $selected = ' selected="selected"';
+      }
+      else {
+        $selected = '';
+      }
+
+      //custom_bfe add options attributes if need
+      if (!empty($element['#custom_bfe']['#options'][$curr_collect_key]['#attributes'])) {
+        $option_attributes = drupal_attributes($element['#custom_bfe']['#options'][$curr_collect_key]['#attributes']);
+      }
+      else {
+        $option_attributes = '';
+      }
+      $options .= '<option' . $option_attributes . ' value="' . check_plain($key) . '"' . $selected . '>' . check_plain($choice) . '</option>';
+    }
+  }
+  return $options;
+}
+
+function custom_bfe_preprocess_radios(&$variables) {
+  if (!path_is_admin(current_path())) {
+    $m_path = drupal_get_path('module', 'custom_bfe');
+    drupal_add_css($m_path . '/css/custom_bfe_form_item_radios.css');
+  }
+}
+
+function custom_bfe_preprocess_checkbox(&$variables) {
+  if (!path_is_admin(current_path())) {
+    $m_path = drupal_get_path('module', 'custom_bfe');
+    drupal_add_css($m_path . '/css/custom_bfe_form_item_checkbox.css');
+  }
+}
+
+/**
+ * Returns HTML for a set of radio button form elements.
+ *
+ * @param $variables
+ *   An associative array containing:
+ *   - element: An associative array containing the properties of the element.
+ *     Properties used: #title, #value, #options, #description, #required,
+ *     #attributes, #children.
+ *
+ * @ingroup themeable
+ */
+function theme_custom_bfe_radios($variables) {
+  $element = $variables['element'];
+  $attributes = array();
+  if (isset($element['#id'])) {
+    $attributes['id'] = $element['#id'];
+  }
+  $attributes['class'] = 'form-radios';
+  if (!empty($element['#attributes']['class'])) {
+    $attributes['class'] .= ' ' . implode(' ', $element['#attributes']['class']);
+  }
+  if (isset($element['#attributes']['title'])) {
+    $attributes['title'] = $element['#attributes']['title'];
+  }
+
+  // add all other attributes
+  unset($element['#attributes']['class']);
+  $custom_attr = array_merge($element['#attributes'], $attributes);
+
+  return '<div' . drupal_attributes($custom_attr) . '>' . (!empty($element['#children']) ? $element['#children'] : '') . '</div>';
+}

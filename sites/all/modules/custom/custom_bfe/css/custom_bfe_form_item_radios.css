@@ -1,0 +1,41 @@
+.form-item.form-type-radio  input.form-radio {
+    display: none;
+}
+
+.form-item.form-type-radio  input.form-radio + label {
+    padding-left: 20px;
+    background: url(../images/radio-icon.png) no-repeat 0 center, url(../images/radio-checked-icon.png) -9999px 0 no-repeat;
+}
+
+.form-item.form-type-radio  input.form-radio:checked + label {
+    padding-left: 20px;
+    background: url(../images/radio-checked-icon.png) no-repeat 0 center;
+}
+
+.page-admin .form-item.form-type-radio  label,
+.page-admin .form-item.form-type-radio  input.form-radio:checked + label,
+.page-node-edit .form-item.form-type-radio  label,
+.page-node-edit .form-item.form-type-radio  input.form-radio:checked + label,
+.page-node-add .form-item.form-type-radio  label,
+.page-node-add .form-item.form-type-radio  input.form-radio:checked + label,
+.page-user-edit .form-item.form-type-radio  label,
+.page-user-edit .form-item.form-type-radio  input.form-radio:checked + label,
+.page-node-add .form-item.form-type-radio  label,
+.page-taxonomy-term-edit .form-item.form-type-radio  input.form-radio:checked + label,
+.page-taxonomy-term-edit .form-item.form-type-radio  label {
+    padding-left: 0 !important;
+    background: none !important;
+}
+
+.page-admin .form-item.form-type-radio  input.form-radio,
+.page-admin .form-item.form-type-radio  input.form-radio:checked,
+.page-node-edit .form-item.form-type-radio  input.form-radio,
+.page-node-edit .form-item.form-type-radio  input.form-radio:checked,
+.page-node-add .form-item.form-type-radio  input.form-radio,
+.page-node-add .form-item.form-type-radio  input.form-radio:checked,
+.page-user-edit .form-item.form-type-radio  input.form-radio,
+.page-user-edit .form-item.form-type-radio  input.form-radio:checked,
+.page-taxonomy-term-edit .form-item.form-type-radio  input.form-radio,
+.page-taxonomy-term-edit .form-item.form-type-radio  input.form-radio:checked {
+    display: inline;
+}

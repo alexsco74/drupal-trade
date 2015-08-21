@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * @file
+ * Custom function module
+ */
+
+/*
+ * Implements hook_block_info()
+ */
+function custom_fun_block_info() {
+  foreach (_custom_fun_get_blocks_var_keys() as $delta => $block_set) {
+    $blocks[$delta] = array(
+      'info' => $block_set['info'],
+      'cache' => DRUPAL_NO_CACHE
+    );
+  }
+  return $blocks;
+}
+
+/*
+ * Get custom blocks vars key
+ */
+function _custom_fun_get_blocks_var_keys($delta = '') {
+  $vars = array(
+    'header_contact' => array(
+      'info' => t('Header contact'),
+      'fields' => array(
+        'phone' => array(
+          'title' => t('Phone'),
+          'default' => '+7 (978) 767-37-40'
+        ),
+        'mail' => array(
+          'title' => t('E-mail'),
+          'default' => 'alexsco74@gmail.com',
+          'formatter' => 'mail_link'
+        ),
+        'work' => array(
+          'title' => t('Work time'),
+          'default' => 'Мы работаем с 9:00 до 20:00 (ежедневно)'
+        ),
+      )
+    ),
+    'footer_contact' => array(
+      'info' => t('Footer contact'),
+      'fields' => array(
+        'address' => array(
+          'title' => t('Address'),
+          'default' => 'Севастополь, ул Большая морская, д. 10, ТЦ'
+        ),
+        'phones' => array(
+          'title' => t('Phones'),
+          'default' => '+7 (978) 767-37-40  |  +7 (978) 767-37-40'
+        ),
+      )
+    ),
+  );
+  return !empty($delta) ? $vars[$delta] : $vars;
+}
+
+/**
+ * Define a configuration form for a block.
+ *
+ */
+function custom_fun_block_configure($delta = '') {
+  // This example comes from node.module.
+  $form = array();
+  $deltas = _custom_fun_get_blocks_var_keys();
+  if (!empty($deltas[$delta])) {
+
+    $block_fields = $deltas[$delta]['fields'];
+    foreach ($block_fields as $var_key_suffix => $var_key_opt) {
+      $var_key = "custom_fun_{$delta}_{$var_key_suffix}";
+
+      $form[$var_key] = array(
+        '#type' => 'textfield',
+        '#title' => $var_key_opt['title'],
+        '#default_value' => variable_get($var_key, $var_key_opt['default']),
+      );
+    }
+  }
+  return $form;
+}
+
+/**
+ * Save the configuration options from hook_block_configure().
+ */
+function custom_fun_block_save($delta = '', $edit = array()) {
+  $deltas = _custom_fun_get_blocks_var_keys();
+  if (!empty($deltas[$delta])) {
+    $block_fields = $deltas[$delta]['fields'];
+    foreach ($block_fields as $var_key_suffix => $var_key_opt) {
+      $var_key = "custom_fun_{$delta}_{$var_key_suffix}";
+      variable_set($var_key, $edit[$var_key]);
+    }
+  }
+}
+
+/**
+ * Return a rendered or renderable view of a block.
+ */
+function custom_fun_block_view($delta = '') {
+  // This example is adapted from node.module.
+  $block = array();
+
+  $deltas = _custom_fun_get_blocks_var_keys();
+  if (!empty($deltas[$delta])) {
+      $block['content'] = array(
+        '#theme' => 'header_contact_block',
+        '#opt' => array(
+          'delta' => $delta,
+          'fields' => $deltas[$delta]['fields']
+        )
+      );
+  }
+  return $block;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function custom_fun_theme() {
+  return array(
+    'header_contact_block' => array(
+      'variables' => array('opt' => NULL),
+      'file' => 'custom_fun.pages.inc',
+    ),
+  );
+}

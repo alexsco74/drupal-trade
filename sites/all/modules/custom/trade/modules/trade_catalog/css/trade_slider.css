@@ -1,0 +1,28 @@
+.trade-price-slider-widget {
+    display: block !important;
+    margin: .5rem 0 1rem 0;
+}
+
+.trade-numeric-slider-form-item > .form-type-textfield {
+    display: inline-block;
+    max-width: 40%;
+    margin-top: 0;
+}
+
+.trade-numeric-slider-form-item > .form-type-textfield input {
+    max-width: 100%;
+}
+
+.trade-numeric-slider-form-item > .trade-field-title {
+    display: block;
+}
+
+.trade-numeric-slider-form-item > .trade-field-suffix {
+    display: inline-block;
+    max-width: 20%;
+}
+
+.trade-catalog-filters .form-item .description {
+    text-transform: lowercase;
+}
+

@@ -1,0 +1,148 @@
+.trade-catalog-page-wr {
+    padding-top: 1.5em;
+}
+
+.trade-catalog-page-sort {
+    text-align: left;
+    overflow: hidden;
+}
+
+.trade-catalog-page-sort-inner {
+    float: left;
+}
+
+.trade-catalog-page-sort-inner h3, .trade-catalog-page-sort-inner ul, .trade-catalog-page-sort-inner ul li {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+}
+
+.trade-catalog-page-sort-inner ul {
+    padding-left: .5em;
+}
+
+.trade-catalog-page {
+    position: relative;
+    min-height: 3rem;
+}
+
+.trade-catalog-filters .form-item .description {
+    display: inline;
+    font-style: normal;
+    font-weight: bold;
+    margin-left: .25rem;
+}
+
+.trade-catalog-link-tree-manager {
+    cursor: pointer;
+    background: url(../images/plus.png) left center no-repeat, url(../images/minus.png) left center no-repeat;
+    padding-left: 12px;
+    margin-left: .25em;
+}
+
+.trade-catalog-link-tree-manager.trade-is-open {
+    background: url(../images/minus.png) left center no-repeat;
+}
+
+a.trade-catalog-remove-link {
+    color: #ff9dc3;
+}
+
+.trade-catalog-filters .form-item.form-type-checkboxes, .trade-catalog-filters .trade-numeric-slider-form-item {
+    margin-bottom: 1.5em;
+    margin-top: 1em;
+}
+
+.trade-catalog-filters .form-item.form-type-checkboxes > label:not(.trade-field-suffix), .trade-catalog-filters .trade-numeric-slider-form-item > label:not(.trade-field-suffix) {
+    border-bottom: 1px dotted #cccccc;
+    display: block;
+}
+
+.trade-catalog-filters .form-item.form-type-checkboxes .form-item {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.trade-catalog-filters .trade-actions input.form-submit {
+    margin-right: 1em;
+}
+
+.trade-catalog-page-sort h3,
+.block .trade-catalog-page-sort h3,
+.trade-catalog-page-sort a {
+    font-size: 1.2rem;
+    line-height: 2rem;
+    text-decoration: none;
+    text-transform: lowercase;
+    font-weight: normal;
+}
+
+.trade-catalog-page-sort a span {
+    display: inline-block;
+    vertical-align: baseline;
+    line-height: 1.2rem;
+}
+
+.trade-catalog-page-sort a {
+    display: inline-block;
+    border: 1px solid transparent;
+    padding: 0 1rem;
+
+}
+
+.trade-catalog-page-sort a.trade-sort-active {
+    border: 1px solid #eef5e4;
+    -webkit-border-radius: 1rem;
+    -moz-border-radius: 1rem;
+    -o-border-radius: 1rem;
+    border-radius: 1rem;
+}
+
+.trade-catalog-page-sort a.trade-sort-asc span {
+    padding-right: 15px;
+    background: url(../images/sort-asc-icon.png) no-repeat right 60% transparent;
+}
+
+.trade-catalog-page-sort a.trade-sort-desc span {
+    padding-right: 15px;
+    background: url(../images/sort-desc-icon.png) no-repeat right 60% transparent;
+}
+
+.trade-catalog-item-list .trade-catalog-terms-list.trade-catalog-item-list-inner > div {
+    display: inline-block;
+    max-width: 25%;
+    min-width: 220px;
+    vertical-align: top;
+    margin: 0;
+    padding: 0;
+}
+
+.no-sidebars .trade-catalog-item-list .trade-catalog-terms-list.trade-catalog-item-list-inner > div {
+    max-width: 19.7%;
+    width: 20%;
+}
+
+.one-sidebar .trade-catalog-item-list .trade-catalog-terms-list.trade-catalog-item-list-inner > div {
+    max-width: 25%;
+    min-width: 200px;
+    width: 25%;
+}
+
+.trade-catalog-item-list .trade-catalog-terms-list.trade-catalog-item-list-inner .trade-catalog-item-list-inner > div {
+    display: inline;
+    margin: 0 0 .25em 0;
+    padding: 0 0.5em;
+    border-right: 1px dotted #999;
+}
+
+.trade-catalog-item-list .trade-catalog-terms-list.trade-catalog-item-list-inner .trade-catalog-item-list-inner > div.first {
+    padding: 0 0.5em 0 0;
+}
+
+.trade-catalog-item-list .trade-catalog-terms-list.trade-catalog-item-list-inner .trade-catalog-item-list-inner > div.last {
+    border-right: none;
+}
+
+.trade-catalog-terms-list.trade-catalog-item-list-inner .trade-catalog-item-list {
+    padding: 0 15px 15px 0;
+}

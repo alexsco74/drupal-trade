@@ -1,0 +1,8 @@
+ul.trade-order-operations{
+    margin:0;
+    list-style-type: none;
+    padding:0;
+}
+ul.trade-order-operations li{
+    padding:0;
+}

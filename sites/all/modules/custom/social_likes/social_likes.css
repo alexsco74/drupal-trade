@@ -1,0 +1,7 @@
+.node ul.social-likes {
+    padding-left: 0;
+}
+
+.social-likes__counter_null {
+    position: absolute;
+}

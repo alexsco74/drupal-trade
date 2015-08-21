@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Uninstall function for Go Dark For IE.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function foo_uninstall() {
+  variable_del('go_dark_for_ie_enable');
+}

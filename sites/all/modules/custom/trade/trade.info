@@ -1,0 +1,16 @@
+name = Trade
+description = Trade
+package = Custom
+version = VERSION
+core = 7.x
+dependencies[] = flexslider
+dependencies[] = colorbox
+dependencies[] = jqeasing
+dependencies[] = custom_bfe
+dependencies[] = cacheexclude
+dependencies[] = htmlmail
+
+configure = admin/config/trade
+stylesheets[all][] = css/trade.css
+stylesheets[all][] = css/trade_cart.css
+scripts[] = js/trade.js

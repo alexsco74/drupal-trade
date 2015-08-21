@@ -1,0 +1,112 @@
+<?php
+// Trade YML Export module
+
+function trade_yml_export_menu() {
+  $items = array();
+  $items['yml_products.xml'] = array(
+    'title' => t('YML export'),
+    'page callback' => 'trade_yml_export_pages_get_xml',
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+    'file' => 'trade_yml_export.pages.inc',
+  );
+
+  $items['admin/config/trade/yml-export'] = array(
+    'title' => 'Trade YML export',
+    'description' => 'Trade YML export',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('trade_yml_export_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -8,
+    'file' => 'trade_yml_export.admin.inc',
+  );
+  return $items;
+}
+
+function trade_yml_export_get_catalog_vid() {
+  $trade_catalog_field_name = variable_get('trade_product_catalog_field', 'field_product_catalog');
+  $term_field = variable_get('trade_yml_export_term_field', $trade_catalog_field_name);
+  $vid = 0;
+  if ($term_field) {
+    $term_field_info = field_info_field($term_field);
+    $vocab = taxonomy_vocabulary_machine_name_load($term_field_info['settings']['allowed_values'][0]['vocabulary']);
+    $vid = $vocab->vid;
+  }
+  return $vid;
+}
+
+function trade_yml_export_theme() {
+  return array(
+    'trade_yml_products' => array(
+      'variables' => array(
+        'currency_code' => NULL,
+        'nodes' => NULL,
+        'nodes_tid' => NULL,
+        'categories' => NULL,
+        'term_field' => NULL,
+        'desc_field' => NULL,
+        'image_field' => NULL
+      ),
+      'template' => 'trade_yml_export_products',
+    )
+  );
+}
+
+// prepare all strings so they are valid for Yandex.Market format
+function trade_yml_export_yml_safe($str) {
+  $rep = array(
+    '"' => '&quot;',
+    '&' => '&amp;',
+    '>' => '&gt;',
+    '<' => '&lt;',
+    "'" => '&apos;'
+  );
+
+  return strtr($str, $rep);
+}
+
+// shortcut for usage in html templates
+function trade_yml_export_ys($str) {
+  return trade_yml_export_yml_safe($str);
+}
+
+
+function _trade_yml_export_get_nodes($ctypes = array(), $term_field = '') {
+  $data = &drupal_static(__FUNCTION__);
+  if (!isset($data)) {
+    $data = array();
+    if (!empty($ctypes)) {
+
+      $select = db_select('node', 'n')
+        ->fields('n', array('nid'))
+        ->condition('n.type', $ctypes, 'IN')
+        ->condition('n.status', 1);
+
+      $term_field_table = 'field_data_' . $term_field;
+      $term_field_table_alias = $term_field;
+
+      $select->innerJoin($term_field_table, $term_field_table_alias, "{$term_field_table_alias}.entity_type = :et AND {$term_field_table_alias}.entity_id = n.nid",
+        array(':et' => 'node'));
+      $select->innerJoin('taxonomy_term_data', 'ttd', "ttd.tid = {$term_field_table_alias}.{$term_field}_tid");
+      $select->addField('ttd', 'tid', 'tid');
+
+      $nids = $select->execute()->fetchCol(0);
+      $tids = $select->execute()->fetchCol(1);
+      $nodes_tid = array();
+      if (!empty($nids)) {
+        $nodes_tid = array_combine($nids, $tids);
+      }
+//      if (!empty($rows)) {
+//        foreach ($rows as $key => $row) {
+//          if (!empty($row->tid)) {
+//            $nodes_tid[$row->nid] = $row->tid;
+//          }
+//        }
+//      }
+      $data['nodes'] = node_load_multiple($nids);
+      $data['nodes_tid'] = $nodes_tid;
+    }
+  }
+  return $data;
+}

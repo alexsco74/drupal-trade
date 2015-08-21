@@ -1,0 +1,92 @@
+<?php
+/**
+ * @file
+ * Main file for Go Dark For IE.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function go_dark_for_ie_menu() {
+  $items['admin/config/user-interface/go_dark_for_ie'] = array(
+    'title' => 'Go Dark For IE',
+    'description' => 'Configure Go Dark For IE settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('go_dark_for_ie_settings'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'go_dark_for_ie.admin.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function go_dark_for_ie_permission() {
+  return array(
+    'ignore go dark for ie screen' => array(
+      'title' => t('Ignore Go Dark For IE screen'),
+      'description' => t('Hide blackout screen.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_page_build().
+ *
+ * Inserts Go Dark For IE blackout.
+ */
+function go_dark_for_ie_page_build(&$page) {
+  // Only check reasons not to blackout if page isn't a test.
+  if (!(isset($_GET['go_dark_for_ie']) && $_GET['go_dark_for_ie'] == 1)) {
+    // Don't blackout if this is not enabled.
+    if (!variable_get('go_dark_for_ie_enable', TRUE)) {
+      return;
+    }
+    // Don't blackout if today is not October 28, 2012.
+    $dateNow        = new DateTime('now');
+    $dateOct26Start = new DateTime('2012-10-26 00:00:00');
+    $dateOct26End   = new DateTime('2012-10-26 23:59:59');
+    if ($dateNow < $dateOct26Start && $dateNow > $dateOct26End) {
+      return;
+    }
+    // Don't blackout for superuser and user roles set to ignore blackout.
+    if (user_access('ignore go dark for ie screen')) {
+      return;
+    }
+    $browser = array(
+      'IE' => 'lt IE 9',
+      '!IE' => FALSE,
+    );
+  }
+  else {
+    // Always render blackout for the preview.
+    $browser = array();
+  }
+  // Don't blackout for AJAX requests.
+  if (strpos($_GET['q'], 'js/') === 0) {
+    return;
+  }
+  // Get blackout markup and set conditional comments.
+  $go_dark_for_ie = array(
+    '#markup' => go_dark_for_ie_output(),
+    '#browsers' => $browser,
+  );
+  // Pre-render conditional comments into prefix/suffix components ready for
+  // page rendering.
+  $page['page_bottom']['go_dark_for_ie'] = drupal_pre_render_conditional_comments($go_dark_for_ie);
+}
+
+/**
+ * Output markup to blackout page.
+ */
+function go_dark_for_ie_output() {
+  $alt = t('You are using an old version of Internet Explorer. Click here to find out more about the Going Dark For IE movement.');
+  return '<div style="position:fixed;top:0;left:0;right:0;bottom:0;background:black;z-index:999999999;text-align:center;">' .
+      '<a href="http://godarkforie.org/upgrade">' .
+        '<img src="http://godarkforie.org/img/intro.jpg" alt="' . $alt . '" />' .
+      '</a>' .
+    '</div>';
+}

@@ -1,0 +1,61 @@
+html .trade-order-line-delete.button {
+    display: inline-block;
+    width: 13px;
+    height: 14px;
+    vertical-align: middle;
+    background: url(../images/delete.png) 0 0 no-repeat;
+    text-indent: -999px;
+    overflow: hidden;
+}
+
+html .trade-order-line-delete.button:active,
+html .trade-order-line-delete.button:focus {
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+    -o-box-shadow: none;
+    box-shadow: none;
+    background: url(../images/delete.png) 0 -14px no-repeat;
+}
+
+.trade-order-data .trade-table-cell {
+    padding: .5rem;
+}
+
+.trade-order-data .trade-table-cell.first {
+    padding: .5rem .5rem .5rem 0;
+}
+
+.trade-order-data .trade-table-cell.last {
+    padding: .5rem 0 .5rem .5rem;
+}
+
+ul.trade-options-view {
+    padding: .5rem 0 0 1rem;
+    margin: 0;
+}
+
+.trade-option-view label {
+    display: inline-block;
+    font-weight: bold;
+    padding-right: .5rem;
+}
+
+.trade-option-view div {
+    display: inline-block;
+}
+
+table.trade-order-product-data td {
+    vertical-align: top;
+}
+
+table.trade-order-product-data td.active {
+    background-color: transparent;
+}
+
+table tr.trade-order-product-data-total td {
+    font-weight: bold;
+}
+
+.trade-order-page .form-type-item label {
+    display: inline-block;
+}

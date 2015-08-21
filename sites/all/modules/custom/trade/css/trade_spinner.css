@@ -1,0 +1,35 @@
+.trade-spinner-container {
+    background-color: #b9b9b9;
+    display: inline-block;
+    vertical-align: baseline;
+    margin-left: .25rem;
+    white-space: nowrap;
+    position: relative;
+}
+
+.trade-spinner-container input {
+    text-align: center !important;
+}
+
+.trade-spinner-button-wr{
+    display: inline-block;
+    vertical-align: baseline;
+}
+
+.trade-spinner-button {
+    display: inline-block;
+    width: 20px;
+    height: 100%;
+    overflow: hidden;
+    text-align: left;
+    text-indent: -9999px;
+    vertical-align: top;
+}
+
+.trade-spinner-minus {
+    background: url(../images/spinner-minus.png) no-repeat center center;
+}
+
+.trade-spinner-plus {
+    background: url(../images/spinner-plus.png) no-repeat center center;
+}

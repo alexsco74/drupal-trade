@@ -1,0 +1,4553 @@
+<?php
+/**
+ * @file
+ * Trade furniture functional
+ */
+
+DEFINE('TRADE_FIELD_PRODUCT_IMAGES', 'field_product_images');
+DEFINE('TRADE_PRODUCT_PREVIEW_IS', 'trade_product_preview');
+DEFINE('TRADE_PRODUCT_THUMB_IS', 'trade_product_thumbnail');
+DEFINE('TRADE_PRODUCT_COLOR_PICKER_THUMB_IS', 'trade_product_color_picker_thumbnail');
+DEFINE('TRADE_PRODUCT_COLOR_PICKER_PREVIEW_IS', 'trade_product_color_picker_preview');
+DEFINE('TRADE_PRODUCT_UPHOLSTER_PICKER_MATERIAL_IS', 'trade_product_upholster_picker_material');
+DEFINE('TRADE_PRODUCT_COLLECTIONS_ELEMENTS_IS', 'trade_product_collections_elements');
+DEFINE('TRADE_PRODUCT_TEASER_IS', 'trade_product_teaser');
+DEFINE('TRADE_SERVICE_SHIPPING_TYPE', 'trade_shipping');
+DEFINE('TRADE_SERVICE_LIFTING_TYPE', 'trade_lifting');
+DEFINE('TRADE_SERVICE_ASSEMBLY_TYPE', 'trade_assembly');
+DEFINE('TRADE_PRODUCT_GALLERY_NAV_COUNT', 4);
+
+function trade_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['collections_elements'] = array(
+    'label' => t('Collection elements'),
+    'custom settings' => FALSE,
+  );
+}
+
+/**
+ * hook_image_default_styles
+ */
+function trade_image_default_styles() {
+  $styles = array();
+  $styles[TRADE_PRODUCT_PREVIEW_IS] = array(
+    'effects' => array(
+      array(
+        'name' => 'image_scale',
+        'data' => array(
+          'height' => 315,
+          'width' => '',
+          'upscale' => 0
+        ),
+        'weight' => 0,
+      ),
+    ),
+  );
+  $styles[TRADE_PRODUCT_THUMB_IS] = array(
+    'effects' => array(
+      array(
+        'name' => 'image_scale_and_crop',
+        'data' => array('width' => 75, 'height' => 75),
+        'weight' => 0,
+      ),
+    ),
+  );
+  // color picker
+  $styles[TRADE_PRODUCT_COLOR_PICKER_THUMB_IS] = array(
+    'effects' => array(
+      array(
+        'name' => 'image_scale_and_crop',
+        'data' => array('width' => 50, 'height' => 50),
+        'weight' => 0,
+      ),
+    ),
+  );
+  $styles[TRADE_PRODUCT_COLOR_PICKER_PREVIEW_IS] = array(
+    'effects' => array(
+      array(
+        'name' => 'image_scale_and_crop',
+        'data' => array('width' => 300, 'height' => 250),
+        'weight' => 0,
+      ),
+    ),
+  );
+
+  // TRADE_PRODUCT_UPHOLSTER_PICKER_MATERIAL_IS
+  $styles[TRADE_PRODUCT_UPHOLSTER_PICKER_MATERIAL_IS] = array(
+    'effects' => array(
+      array(
+        'name' => 'image_scale_and_crop',
+        'data' => array('width' => 117, 'height' => 117),
+        'weight' => 0,
+      ),
+    ),
+  );
+
+  //TRADE_PRODUCT_COLLECTIONS_ELEMENTS_IS
+  $styles[TRADE_PRODUCT_COLLECTIONS_ELEMENTS_IS] = array(
+    'effects' => array(
+      array(
+        'name' => 'image_scale',
+        'data' => array(
+          'height' => 90,
+          'width' => '',
+          'upscale' => 0
+        ),
+        'weight' => 0,
+      ),
+    ),
+  );
+
+  //TRADE_PRODUCT_TEASER_IS
+  $styles[TRADE_PRODUCT_TEASER_IS] = array(
+    'effects' => array(
+      array(
+        'name' => 'image_scale',
+        'data' => array(
+          'height' => '',
+          'width' => 160,
+          'upscale' => 1
+        ),
+        'weight' => 0,
+      ),
+    ),
+  );
+  return $styles;
+}
+
+function trade_block_info() {
+  $blocks['cart'] = array(
+    'info' => t('Cart (trade)'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+  $blocks['product_images_gallery'] = array(
+    'info' => t('Product images gallery (trade)'),
+    'cache' => DRUPAL_NO_CACHE
+  );
+  return $blocks;
+}
+
+function trade_block_configure($delta = '') {
+  $form = array();
+
+  switch ($delta) {
+    case 'product_images_gallery':
+
+      foreach (image_styles() as $name => $image_style) {
+        $image_styles_opts[$name] = $image_style['label'];
+      }
+      $form['trade_' . $delta . 'image_preview_is'] = array(
+        '#type' => 'select',
+        '#title' => t('Preview image style'),
+        '#default_value' => variable_get('trade_' . $delta . 'image_preview_is', TRADE_PRODUCT_PREVIEW_IS),
+        '#options' => $image_styles_opts,
+      );
+      $form['trade_' . $delta . 'image_thumb_is'] = array(
+        '#type' => 'select',
+        '#title' => t('Thumbnail image style'),
+        '#default_value' => variable_get('trade_' . $delta . 'image_thumb_is', TRADE_PRODUCT_THUMB_IS),
+        '#options' => $image_styles_opts,
+      );
+      break;
+
+  }
+  return $form;
+}
+
+function trade_block_save($delta = '', $edit = array()) {
+  if ($delta == 'product_images_gallery') {
+    variable_set('trade_' . $delta . 'image_preview_is', $edit['trade_' . $delta . 'image_preview_is']);
+    variable_set('trade_' . $delta . 'image_thumb_is', $edit['trade_' . $delta . 'image_thumb_is']);
+  }
+}
+
+function trade_block_view($delta = '') {
+  global $user;
+  $block = array();
+
+  switch ($delta) {
+    case 'cart':
+      if (user_access('access content')) {
+        $order_id = _trade_get_current_order_id();
+        if (!empty($order_id)) {
+          $block['content'] = array(
+            '#theme' => 'trade_cart_block',
+            '#options' => array(
+              'order_id' => $order_id,
+            ),
+          );
+        }
+      }
+      break;
+    case 'product_images_gallery':
+      $node = menu_get_object();
+      if (!empty($node)) {
+        $items = field_get_items('node', $node, TRADE_FIELD_PRODUCT_IMAGES);
+        $sett['image_preview_is'] = variable_get('trade_' . $delta . 'image_preview_is', TRADE_PRODUCT_PREVIEW_IS);
+        $sett['image_thumb_is'] = variable_get('trade_' . $delta . 'image_thumb_is', TRADE_PRODUCT_THUMB_IS);
+        if (!empty($items)) {
+          $block['content'] = array(
+            '#theme' => 'trade_product_image_gallery',
+            '#items' => $items,
+            '#sett' => $sett,
+          );
+        }
+      }
+      break;
+  }
+  return $block;
+}
+
+function trade_theme($existing, $type, $theme, $path) {
+  return array(
+    'trade_orders_page' => array(
+      'variables' => array(
+        'option' => NULL,
+      ),
+      'file' => 'trade_order.pages.inc',
+    ),
+    'trade_option_view' => array(
+      'variables' => array(
+        'entity_id' => NULL,
+        'entity_bundle' => NULL,
+        'option' => NULL,
+      ),
+      'file' => 'trade_order.pages.inc',
+    ),
+    'trade_order_view' => array(
+      'variables' => array(
+        'order' => NULL,
+        'options' => NULL,
+      ),
+      'file' => 'trade_order.pages.inc',
+    ),
+    'trade_order_edit' => array(
+      'variables' => array(
+        'order' => NULL,
+        'options' => NULL,
+      ),
+      'file' => 'trade_order.pages.inc',
+    ),
+    'trade_product_image_gallery' => array(
+      'variables' => array(
+        'items' => NULL,
+        'sett' => NULL
+      ),
+      'file' => 'trade.pages.inc',
+    ),
+    'trade_product_price_view' => array(
+      'variables' => array(
+        'price' => NULL,
+        'nid' => NULL,
+      ),
+      'file' => 'trade.pages.inc',
+    ),
+    'trade_cart_block' => array(
+      'variables' => array(
+        'options' => NULL
+      ),
+      'file' => 'trade_order.pages.inc',
+    ),
+  );
+}
+
+function _trade_product_get_nids_on_tid($term_tid = 0, $product_bundles = array()) {
+
+  // get product nid referenced with this term
+  $query = db_select('node', 'n')
+    ->condition('n.status', 1)
+    ->condition('n.type', $product_bundles, 'IN')
+    ->fields('n');
+  $query->innerJoin('taxonomy_index', 'ti', 'ti.nid = n.nid AND ti.tid = :tid', array(':tid' => $term_tid));
+  $nids = $query->execute()->fetchCol();
+
+  if (!empty($nids)) {
+    $nids = array_unique($nids);
+  }
+
+  // get option nids
+  $option_query = db_select('node', 'n')
+    ->condition('n.status', 1)
+    ->condition('n.type', $product_bundles, 'IN')
+    ->fields('n');
+
+  $option_query->innerJoin('trade_option', 'tor', 'tor.nid = n.nid AND tor.field_value = :tid', array(':tid' => $term_tid));
+
+  $option_nids = $option_query->execute()->fetchCol();
+  if (!empty($option_nids)) {
+    $option_nids = array_unique($option_nids);
+  }
+  $all_nids = array_merge($nids, $option_nids);
+  $all_nids = array_unique($all_nids);
+
+  return $all_nids;
+}
+
+/*
+ * update referenced product cache
+ */
+function _trade_product_update_referenced_cache($term_tid = 0) {
+
+  if (variable_get('trade_product_cache_enable', TRUE)
+    && ($product_bundles = array_filter(variable_get('trade_product_node_types', array('product'))))
+  ) {
+    $all_nids = _trade_product_get_nids_on_tid($term_tid, $product_bundles);
+    if (!empty($all_nids)) {
+      $_SESSION['http_request_count'] = 0;
+      $batch = _trade_batch_pcache_batch($all_nids);
+      batch_set($batch);
+    }
+  }
+}
+
+function trade_taxonomy_term_update($term) {
+
+// update referenced product cache
+  _trade_product_update_referenced_cache($term->tid);
+
+  //clear upholstery cache on update materials
+  if (variable_get('trade_product_upholstery_cache_enable', FALSE)) {
+    _trade_clear_uph_cache_change_term($term);
+  }
+
+}
+
+/**
+ * Implements hook_permission().
+ */
+function trade_permission() {
+  $perms = array(
+    'view all orders' => array(
+      'title' => t('View all orders'),
+    ),
+    'view own orders' => array(
+      'title' => t('View own orders'),
+    ),
+    'edit all orders' => array(
+      'title' => t('Edit all orders'),
+    ),
+    'edit own orders' => array(
+      'title' => t('Edit own orders'),
+    ),
+    'delete all orders' => array(
+      'title' => t('Delete all orders'),
+    ),
+    'delete own orders' => array(
+      'title' => t('Delete own orders'),
+    ),
+    'notify about create orders' => array(
+      'title' => t('Notify about create orders'),
+    ),
+  );
+  return $perms;
+}
+
+function trade_order_page_title($order) {
+  global $language;
+  $title = t('Order #@id', array('@id' => $order->order_id));
+
+  return $title;
+}
+
+function trade_orders_all_page_access() {
+  global $user;
+  $access = FALSE;
+
+  if (user_access('view all orders') || $user->uid == 1) {
+    $count_orders = db_query("SELECT COUNT(*) FROM {trade_order} WHERE status = 1")->fetchField();
+    if (!empty($count_orders)) {
+      $access = TRUE;
+    }
+  }
+  return $access;
+}
+
+
+function trade_orders_page_access() {
+  global $user, $trade_uid;
+  $access = FALSE;
+
+  if (arg(2) != 'all' && user_access('view own orders')) {
+
+    if (is_null($trade_uid)) {
+      $trade_uid = _trade_get_trade_uid();
+    }
+
+    $count_orders = db_query("SELECT COUNT(*) FROM {trade_order} WHERE status = 1 AND uid = :uid AND trade_uid = :trade_uid", array(
+      ':uid' => $user->uid,
+      ':trade_uid' => $trade_uid
+    ))->fetchField();
+    if (!empty($count_orders)) {
+      $access = TRUE;
+    }
+  }
+
+  if (arg(2) == 'all' && (user_access('view all orders') || $user->uid == 1)) {
+    $count_orders = db_query("SELECT COUNT(*) FROM {trade_order} WHERE status = 1")->fetchField();
+    if (!empty($count_orders)) {
+      $access = TRUE;
+    }
+  }
+  return $access;
+}
+
+function trade_order_access($op, $order) {
+  global $user;
+  switch ($op) {
+    case 'view':
+      if ($user->uid == 1
+        || user_access('view all orders')
+        || (user_access('view own orders') && _trade_order_is_my($order))
+      ) {
+        return TRUE;
+      }
+      break;
+    case 'update':
+      if (_trade_order_is_my($order) && (empty($order->status) || user_access('edit own orders'))
+        || $user->uid == 1
+        || user_access('edit all orders')
+      ) {
+        return TRUE;
+      }
+      break;
+  }
+  return FALSE;
+}
+
+
+function trade_cart_access() {
+  $access = _trade_get_current_order_id();
+  return !empty($access) ? TRUE : FALSE;
+}
+
+
+function _trade_is_product_materials_args($node = NULL, $trade_category_collection = NULL) {
+  return _trade_is_product($node) && !empty($trade_category_collection->category) && !empty($trade_category_collection->collection);
+}
+
+function _trade_is_product($node = NULL) {
+  $is = FALSE;
+  $trade_product_node_types = array_filter(variable_get('trade_product_node_types', array()));
+  if (!empty($node->type) && in_array($node->type, $trade_product_node_types, TRUE)) {
+    $is = TRUE;
+  }
+  return $is;
+}
+
+function trade_product_access($node = NULL) {
+
+  return !empty($access) ? TRUE : FALSE;
+}
+
+/*
+ * implements hook_menu()
+ */
+function trade_menu() {
+
+  $items['trade/orders-all'] = array(
+    'title' => 'Orders (all)',
+    'page callback' => 'trade_orders_page',
+    'access callback' => 'trade_orders_all_page_access',
+    'file' => 'trade_order.pages.inc',
+    'weight' => -6,
+  );
+
+  $items['trade/orders'] = array(
+    'title' => 'Orders',
+    'page callback' => 'trade_orders_page',
+    'access callback' => 'trade_orders_page_access',
+    'file' => 'trade_order.pages.inc',
+    'weight' => -7,
+  );
+
+  $items['trade/cart'] = array(
+    'title' => 'Cart',
+    'page callback' => 'trade_order_cart',
+    'access callback' => 'trade_cart_access',
+    'file' => 'trade_order.pages.inc',
+    'weight' => -8,
+  );
+
+  $items['trade/order/%trade_order'] = array(
+    'title callback' => 'trade_order_page_title',
+    'title arguments' => array(2),
+    'page callback' => 'trade_order_page_view',
+    'page arguments' => array(2),
+    'access callback' => 'trade_order_access',
+    'access arguments' => array('view', 2),
+    'file' => 'trade_order.pages.inc',
+  );
+
+  $items['trade/order/%trade_order/view'] = array(
+    'title' => 'View',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+    'file' => 'trade_order.pages.inc',
+  );
+  $items['trade/order/%trade_order/edit'] = array(
+    'title' => 'Edit',
+    'page callback' => 'trade_order_page_edit',
+    'page arguments' => array(2),
+    'access callback' => 'trade_order_access',
+    'access arguments' => array('update', 2),
+    'weight' => 0,
+    'type' => MENU_LOCAL_TASK,
+    'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    'file' => 'trade_order.pages.inc',
+  );
+  $items['trade/order/%trade_order/action-edit'] = array(
+    'page arguments' => array(2),
+    'page callback' => 'trade_order_action_edit',
+    'page arguments' => array(2),
+    'access callback' => 'trade_order_access',
+    'access arguments' => array('update', 2),
+    'file' => 'trade_order.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['trade/product/%node/upholstery'] = array(
+    'page arguments' => array(2),
+    'page callback' => 'trade_product_upholstery_json_callback',
+    'access callback' => '_trade_is_product',
+    'access arguments' => array(2),
+    'file' => 'trade_product.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+
+  $items['trade/product/%node/upholstery/materials/%trade_category_collection'] = array(
+    'page arguments' => array(2, 5),
+    'page callback' => 'trade_product_upholstery_materials_json_callback',
+    'access callback' => '_trade_is_product_materials_args',
+    'access arguments' => array(2, 5),
+    'file' => 'trade_product.pages.inc',
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/config/trade'] = array(
+    'title' => 'Trade',
+    'description' => 'Trade config',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('trade_admin_config_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'trade.admin.inc',
+    'position' => 'left',
+  );
+  $items['admin/config/trade/general'] = array(
+    'title' => 'Trade',
+    'description' => 'Trade config',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+    'file' => 'trade.admin.inc',
+  );
+
+  $items['admin/config/trade/product'] = array(
+    'title' => 'Trade product',
+    'description' => 'Trade product',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('trade_admin_config_product_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -9,
+    'file' => 'trade.admin.inc',
+  );
+
+  $items['admin/config/trade/cache'] = array(
+    'title' => 'Trade cache',
+    'description' => 'Trade cache',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('trade_admin_config_cache_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => -7,
+    'file' => 'trade.admin.inc',
+  );
+
+  return $items;
+}
+
+/*
+ * Get field instances on field types
+ */
+function _trade_get_field_instances($entity_type = 'node', $bundle_name = 'product', $field_types = array('taxonomy_term_reference'), $mode = 'label') {
+  $ins = array();
+  $weights = array();
+  $field_info = field_info_fields();
+  $field_instances = field_info_instances($entity_type, $bundle_name);
+
+  foreach ($field_instances as $field_ins_name => $field_ins) {
+    if (in_array($field_info[$field_ins_name]['type'], $field_types, TRUE)) {
+      $ins[$field_ins_name] = $mode == 'label' ? $field_ins['label'] : $field_ins;
+      $weights[$field_ins_name] = !empty($field_ins['widget']['weight']) ? $field_ins['widget']['weight'] : 0;
+    }
+  }
+
+  if (!empty($weights)) {
+    asort($weights);
+    $ins = array_merge($weights, $ins);
+  }
+
+  return $ins;
+}
+
+/**
+ * Implements hook_field_extra_fields().
+ */
+function trade_field_extra_fields() {
+
+  $trade_node_types = array_filter(variable_get('trade_product_node_types', array('product')));
+  foreach ($trade_node_types as $node_type) {
+    $extra['node'][$node_type] = array(
+      'form' => array(
+        'trade_product' => array(
+          'label' => t('Product settings'),
+          'description' => t('Trade'),
+          'weight' => 10,
+        ),
+      ),
+      'display' => array(
+        'trade_product_gallery' => array(
+          'label' => t('Product gallery (trade)'),
+          'description' => t('Trade'),
+          'weight' => 10,
+        ),
+        'trade_product_price' => array(
+          'label' => t('Product price (trade)'),
+          'description' => t('Trade'),
+          'weight' => 10,
+        ),
+        'trade_product_dimensions' => array(
+          'label' => t('Product dimensions (trade)'),
+          'description' => t('Trade'),
+          'weight' => 10,
+        ),
+        'trade_product_service' => array(
+          'label' => t('Product service (trade)'),
+          'description' => t('Trade product service'),
+          'weight' => 10,
+        ),
+        'trade_product_option_color_picker' => array(
+          'label' => t('Product option color picker (trade)'),
+          'title' => t('Enabled colors'),
+          'description' => t('Trade'),
+          'weight' => 10,
+        ),
+        'trade_product_option_color_viewer' => array(
+          'label' => t('Product option color viewer (trade)'),
+          'title' => t('Enabled colors'),
+          'description' => t('Trade'),
+          'weight' => 10,
+        ),
+        'trade_product_option_upholstery_picker' => array(
+          'label' => t('Product option upholstery picker (trade)'),
+          'title' => t('Upholstery picker'),
+          'description' => t('Trade'),
+          'weight' => 10,
+        ),
+        'trade_product_add_to_order' => array(
+          'label' => t('Product add to order (trade)'),
+          'description' => t('Trade'),
+          'weight' => 10,
+        ),
+      )
+    );
+  }
+
+  return $extra;
+}
+
+/*
+ * @return array of object with price
+ */
+function _trade_get_product_option_field_values($field_info = array(), $nid = 0, $fabricator_tid = 0) {
+  $field_values = array();
+  if (!empty($field_info['type'])) {
+    switch ($field_info['type']) {
+      case 'taxonomy_term_reference':
+        if (!empty($field_info['settings']['allowed_values']) && is_array($field_info['settings']['allowed_values'])) {
+          $allowed_value = current($field_info['settings']['allowed_values']);
+          if (!empty($allowed_value['vocabulary'])) {
+            $voc = taxonomy_vocabulary_machine_name_load($allowed_value['vocabulary']);
+            if (!empty($voc)) {
+
+              // get terms
+              if (!empty($fabricator_tid)) {
+                $max_depth = 1;
+              }
+              else {
+                $max_depth = NULL;
+              }
+              $tree = taxonomy_get_tree($voc->vid, $fabricator_tid, $max_depth);
+
+              // get product option price
+              if (!empty($nid) && !empty($field_info['field_name'])) {
+                $product_options = _trade_get_product_options($nid, $field_info['field_name']);
+              }
+              else {
+                $product_options = array();
+              }
+              if (!empty($tree)) {
+                foreach ($tree as $term) {
+                  $field_values[$term->tid] = $term;
+
+                  // add product option
+                  if (!empty($product_options[$nid][$field_info['field_name']][$term->tid])) {
+                    $field_values[$term->tid]->trade_product_option = $product_options[$nid][$field_info['field_name']][$term->tid];
+                  }
+                }
+              }
+            }
+          }
+        }
+        break;
+    }
+  }
+
+  return $field_values;
+}
+
+function _trade_get_product_options($nids = array(), $option_field = '') {
+
+  $products_options = array();
+
+  if (!empty($nids) && !is_array($nids)) {
+    $nids = array($nids);
+  }
+
+  $options = array();
+  $query = db_select('trade_option', 't')->fields('t');
+
+  if (!empty($nids)) {
+
+    $query->condition('t.nid', $nids, 'IN');
+  }
+  if (!empty($option_field)) {
+    $query->condition('t.field_name', $option_field);
+  }
+  $query->leftJoin('trade_option_price', 'top', 'top.pid = t.pid');
+  $query->addField('top', 'price');
+
+  // sort term
+  $query->leftJoin('taxonomy_term_data', 'ttd', 'ttd.tid = t.field_value');
+  $query->orderBy('ttd.weight', 'ASC');
+  $query->orderBy('ttd.name', 'ASC');
+
+  $rows = $query->execute()->fetchAll();
+
+  if (!empty($rows)) {
+    foreach ($rows as $row) {
+      $products_options[$row->nid][$row->field_name][$row->field_value] = $row;
+    }
+  }
+
+  //attach entity object
+  if (!empty($products_options)) {
+    foreach ($products_options as $product_nid => &$product_options) {
+      foreach ($product_options as $field_name => &$field_values) {
+        $field_info = field_info_field($field_name);
+        switch ($field_info['type']) {
+          case 'taxonomy_term_reference':
+            $option_entities = taxonomy_term_load_multiple(array_keys($field_values));
+            break;
+          case 'entityreference':
+            $option_entities = node_load_multiple(array_keys($field_values));
+            break;
+        }
+        if (!empty($option_entities)) {
+          foreach ($field_values as $field_value => &$product_option) {
+            if (isset($option_entities[$field_value])) {
+              $product_option->trade_product_option_entity = $option_entities[$field_value];
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return $products_options;
+}
+
+function _trade_get_material_bundle($field_name = '') {
+  $material_bundle = '';
+  $field_info_field = field_info_field($field_name);
+  $material_bundle = key($field_info_field['settings']['handler_settings']['target_bundles']);
+  return $material_bundle;
+}
+
+function trade_form_alter(&$form, &$form_state, $form_id) {
+  global $language;
+  $m_path = drupal_get_path('module', 'trade');
+  $trade_node_types = array_filter(variable_get('trade_product_node_types', array('product')));
+  if (!empty($trade_node_types) && strpos($form_id, '_node_form') && !empty($form['type']['#value']) && in_array($form['type']['#value'], $trade_node_types, TRUE)) {
+    $form['trade_product'] = array(
+      '#type' => 'vertical_tabs',
+      '#prefix' => '<label>' . t('Trade') . '</label>',
+      '#tree' => TRUE,
+    );
+    $form['trade_product']['price'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Price'),
+    );
+    $form['trade_product']['price']['trade_product_price'] = array(
+      '#type' => 'textfield',
+      '#size' => 12,
+      '#maxlength' => 12,
+      '#required' => TRUE,
+      '#element_validate' => array('element_validate_number'),
+      '#default_value' => !empty($form['#node']->trade_product['price']['trade_product_price']) ? $form['#node']->trade_product['price']['trade_product_price'] : 0,
+    );
+
+    // product option price
+    if (!empty($form['#node']->type) && ($option_fields = array_filter(variable_get('trade_product_node_types_options_' . $form['#node']->type, array())))) {
+      $form['trade_product']['option_price'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Option'),
+        '#attached' => array(
+          'js' => array(drupal_get_path('module', 'trade') . '/js/trade_option.js'),
+        )
+      );
+      $furniture_upholstery_used = FALSE;
+      $upholstery_fields = array_filter(variable_get('trade_product_node_types_upholstery_options_' . $form['#node']->type, array()));
+      foreach ($option_fields as $option_field) {
+
+        //hide default node field
+        $form[$option_field]['#access'] = FALSE;
+
+        //option field
+        //furniture upholstery
+
+        $is_furniture_upholstery = FALSE;
+        $fabricator_tid = 0;
+
+        if (!empty($upholstery_fields) && isset($upholstery_fields[$option_field])) {
+          if ($furniture_upholstery_used) {
+            continue;
+          }
+          else {
+            $furniture_upholstery_used = TRUE;
+            $is_furniture_upholstery = TRUE;
+
+
+            $material_bundle = _trade_get_material_bundle($option_field);
+
+            if (!empty($material_bundle)) {
+              $upholstery_field_instances = _trade_get_field_instances('node', $material_bundle, array('taxonomy_term_reference'));
+              $field_collection_name = variable_get('trade_product_upholstery_collection_field', 'field_material_upholster_collect');
+              if (!empty($field_collection_name) && isset($upholstery_field_instances[$field_collection_name])) {
+                $option_field_use = $field_collection_name;
+                $field_instance = field_info_instance('node', $option_field_use, $material_bundle);
+                $field_instance['label'] = t('Upholstery category');
+                $field_info = field_info_field($option_field_use);
+                $field_fabricator = variable_get('trade_product_fabricator_field', 'field_product_fabricator');
+                $fabricator_items = field_get_items('node', $form['#node'], $field_fabricator);
+                if (!empty($fabricator_items[0]['tid'])) {
+                  $fabricator_tid = $fabricator_items[0]['tid'];
+                }
+
+              }
+            }
+          }
+        }
+        else {
+          $option_field_use = $option_field;
+          $field_instance = field_info_instance('node', $option_field_use, $form['#node']->type);
+          $field_info = field_info_field($option_field_use);
+        }
+
+
+        if (!empty($option_field_use)) {
+
+          // upholstery & not required data (fabricator)
+          if ($is_furniture_upholstery && empty($fabricator_tid)) {
+            $form['trade_product']['option_price'][$option_field_use] = array(
+              '#prefix' => '<label>' . $field_instance['label'] . '</label>',
+              '#markup' => '<div class="trade-notify">' . t('Please, enter fabricator and save node for edit this upholstery category option  prices.') . '</div>',
+            );
+          }
+          else {
+
+            // classic product option
+            $form['trade_product']['option_price'][$option_field_use] = array(
+              '#prefix' => '<div class="trade-collapsible-container trade-collapsible-container-close">'
+                . '<div class="trade-collapsible-container-link">' . '<label>' . $field_instance['label'] . '</label></div>'
+                . '<div class="trade-collapsible-container-content"><table><tr>'
+                . '<th>' . t('title') . '</th>'
+                . '<th>' . t('Price') . '</th>'
+                . '<th>' . t('Use') . '</th>'
+                . '<th>' . t('Default') . '</th>'
+                . '</tr>',
+              '#suffix' => '</table></div></div>',
+              '#attached' => array(
+                'css' => array($m_path . '/css/trade_collapsible_container.css'),
+                'js' => array($m_path . '/js/trade_collapsible_container.js')
+              ),
+            );
+
+            // else
+            $field_values = _trade_get_product_option_field_values($field_info, 0, $fabricator_tid);
+            if (!empty($field_values)) {
+              foreach ($field_values as $field_value => $field_obj) {
+                $form['trade_product']['option_price'][$option_field_use][$field_value] = array(
+                  '#prefix' => '<tr>',
+                  '#suffix' => '</tr>',
+                );
+                $form['trade_product']['option_price'][$option_field_use][$field_value]['field_value'] = array(
+                  '#prefix' => '<td>',
+                  '#suffix' => '</td>',
+                  '#markup' => $field_obj->name,
+
+                );
+                $form['trade_product']['option_price'][$option_field_use][$field_value]['price'] = array(
+                  '#prefix' => '<td>',
+                  '#suffix' => '</td>',
+                  '#type' => 'textfield',
+                  '#size' => 12,
+                  '#maxlength' => 12,
+                  '#element_validate' => array('element_validate_number'),
+                  '#default_value' => !empty($form['#node']->trade_product['option_price'][$option_field_use][$field_value]->price) ? $form['#node']->trade_product['option_price'][$option_field_use][$field_value]->price : '',
+                  '#attributes' => array('class' => array('trade-option-price'))
+                );
+                $form['trade_product']['option_price'][$option_field_use][$field_value]['use'] = array(
+                  '#prefix' => '<td>',
+                  '#suffix' => '</td>',
+                  '#type' => 'checkbox',
+                  '#default_value' => !empty($form['#node']->trade_product['option_price'][$option_field_use][$field_value]->pid) ? TRUE : FALSE,
+                  '#attributes' => array('class' => array('trade-option-use'))
+                );
+
+                //option default
+                $option_default_value = !empty($form['#node']->trade_product['option_price'][$option_field_use][$field_value]->is_default) ? TRUE : FALSE;
+                $check_title = $language->language == 'ru' ? t('Отметить') : t('Check it');
+                $form['trade_product']['option_price'][$option_field_use][$field_value]['is_default'] = array(
+                  '#prefix' => '<td>',
+                  '#suffix' => '</td>',
+                  '#type' => 'checkbox',
+                  '#title' => $check_title,
+                  '#default_value' => $option_default_value,
+                  '#attributes' => array(
+                    'class' => array(
+                      'trade-option-is-default'
+                    ),
+                    'data-trade-group' => $option_field_use,
+                  )
+                );
+              }
+            }
+            else {
+              $empty_note = t('Sorry, option variants not found, may be create or add terms ?!');
+              $form['trade_product']['option_price'][$option_field_use][$option_field_use] = array(
+                '#prefix' => '<tr><td colspan="3">' . $empty_note,
+                '#suffix' => '</td></tr>',
+              );
+            }
+          }
+        }
+      }
+    }
+
+    // service
+    if (isset($form['#node']->trade_product['service'])) {
+      $node_trade_service = $form['#node']->trade_product['service'];
+    }
+    else {
+      $node_trade_service = array();
+    }
+    $form['trade_product']['service'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Service'),
+    );
+
+    // shipping
+    $form['trade_product']['service'][TRADE_SERVICE_SHIPPING_TYPE] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Shipping'),
+    );
+    $form['trade_product']['service'][TRADE_SERVICE_SHIPPING_TYPE]['fix_amount']['amount'] = array(
+      '#type' => 'textfield',
+      '#title' => t('On city (amount)'),
+      '#size' => 12,
+      '#maxlength' => 12,
+      '#default_value' => isset($node_trade_service[TRADE_SERVICE_SHIPPING_TYPE]['fix_amount'])
+          ? $node_trade_service[TRADE_SERVICE_SHIPPING_TYPE]['fix_amount']['amount'] : variable_get(TRADE_SERVICE_SHIPPING_TYPE . '_fix_amount_' . '_amount', 0),
+      '#description' => t('0 - free'),
+      '#element_validate' => array('element_validate_number'),
+    );
+    $form['trade_product']['service'][TRADE_SERVICE_SHIPPING_TYPE]['price_on_distance']['price'] = array(
+      '#type' => 'textfield',
+      '#title' => t('From price_on_distance (price 1 km)'),
+      '#size' => 12,
+      '#maxlength' => 12,
+      '#default_value' => !empty($node_trade_service[TRADE_SERVICE_SHIPPING_TYPE]['price_on_distance'])
+          ? $node_trade_service[TRADE_SERVICE_SHIPPING_TYPE]['price_on_distance']['price'] : variable_get(TRADE_SERVICE_SHIPPING_TYPE . '_price_on_distance_' . '_amount', 0),
+      '#description' => t('0 - free'),
+      '#element_validate' => array('element_validate_number'),
+    );
+
+    //custom shipping
+    if (db_table_exists('trade_shipping')) {
+
+      $custom_shipping_objs = trade_shipping_load_multiply();
+      foreach ($custom_shipping_objs as $custom_shipping_key => $custom_shipping_obj) {
+        $element_key = 'custom_' . $custom_shipping_obj->sid;
+        $form['trade_product']['service'][TRADE_SERVICE_SHIPPING_TYPE][$element_key]['amount'] = array(
+          '#type' => 'textfield',
+          '#title' => $custom_shipping_obj->title,
+          '#size' => 12,
+          '#maxlength' => 12,
+          '#default_value' => isset($node_trade_service[TRADE_SERVICE_SHIPPING_TYPE][$element_key])
+              ? $node_trade_service[TRADE_SERVICE_SHIPPING_TYPE][$element_key]['amount']
+              : $custom_shipping_obj->amount,
+          '#description' => t('0 - free'),
+          '#element_validate' => array('element_validate_number'),
+        );
+      }
+    }
+
+    // lifting
+    $form['trade_product']['service'][TRADE_SERVICE_LIFTING_TYPE] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Lifting'),
+    );
+    $form['trade_product']['service'][TRADE_SERVICE_LIFTING_TYPE]['lift']['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Lift'),
+      '#options' => array(
+        '_none' => t('Without lifting'),
+        'free' => t('Free'),
+        'amount' => t('Fixed amount'),
+        'percent_on_amount' => t('3%, not less 200 rub.'),
+      ),
+      '#default_value' => isset($node_trade_service[TRADE_SERVICE_LIFTING_TYPE]['lift']['type'])
+          ? $node_trade_service[TRADE_SERVICE_LIFTING_TYPE]['lift']['type']
+          : variable_get(TRADE_SERVICE_LIFTING_TYPE . '_lift', 'free'),
+    );
+    $form['trade_product']['service'][TRADE_SERVICE_LIFTING_TYPE]['lift']['amount'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Fixed amount'),
+      '#size' => 12,
+      '#maxlength' => 12,
+      '#default_value' => isset($node_trade_service[TRADE_SERVICE_LIFTING_TYPE]['lift']['amount'])
+          ? $node_trade_service[TRADE_SERVICE_LIFTING_TYPE]['lift']['amount']
+          : variable_get(TRADE_SERVICE_LIFTING_TYPE . '_lift_' . '_amount', 0),
+      '#element_validate' => array('element_validate_number'),
+    );
+    $form['trade_product']['service'][TRADE_SERVICE_LIFTING_TYPE]['steps']['type'] = array(
+      '#type' => 'select',
+      '#title' => t('On stairs'),
+      '#options' => array(
+        '_none' => t('Without lifting'),
+        'free' => t('Free'),
+        'price' => t('Fix price on floor'),
+        'percent_on_amount' => t('3%, not less 250 rub. on floor'),
+      ),
+      '#default_value' => isset($node_trade_service[TRADE_SERVICE_LIFTING_TYPE]['steps']['type'])
+          ? $node_trade_service[TRADE_SERVICE_LIFTING_TYPE]['steps']['type']
+          : variable_get(TRADE_SERVICE_LIFTING_TYPE . '_steps', 'percent_on_amount'),
+    );
+    $form['trade_product']['service'][TRADE_SERVICE_LIFTING_TYPE]['steps']['price'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Price on floor'),
+      '#size' => 12,
+      '#maxlength' => 12,
+      '#default_value' => isset($node_trade_service[TRADE_SERVICE_LIFTING_TYPE]['steps']['price'])
+          ? $node_trade_service[TRADE_SERVICE_LIFTING_TYPE]['steps']['price']
+          : variable_get(TRADE_SERVICE_LIFTING_TYPE . '_steps_' . '_price', 0),
+      '#element_validate' => array('element_validate_number'),
+    );
+
+    // assembly
+    $form['trade_product']['service'][TRADE_SERVICE_ASSEMBLY_TYPE] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Assembly'),
+    );
+    $form['trade_product']['service'][TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Assembly'),
+      '#options' => array(
+        '_none' => t('Without assembly'),
+        'free' => t('Free'),
+        'amount' => t('Amount'),
+        'percent_on_amount_15' => t('15%, not less 500 rub.'),
+        'percent_on_amount_10' => t('10%, not less 700 rub.'),
+      ),
+      '#default_value' => isset($node_trade_service[TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['type'])
+          ? $node_trade_service[TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['type']
+          : variable_get(TRADE_SERVICE_ASSEMBLY_TYPE, '_none'),
+    );
+    $form['trade_product']['service'][TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['amount'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Amount'),
+      '#size' => 12,
+      '#maxlength' => 12,
+      '#default_value' => isset($node_trade_service[TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['amount'])
+          ? $node_trade_service[TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['amount']
+          : variable_get(TRADE_SERVICE_ASSEMBLY_TYPE . '_assembly_amount', 0),
+      '#element_validate' => array('element_validate_number'),
+    );
+  }
+}
+
+function _trade_product_delete_option_with_price_on_term($term = NULL) {
+  if (!empty($term->tid)) {
+
+    //get taxonomy_term_reference option field
+    $fields_names = array();
+    foreach (field_info_fields() as $field_name => $field) {
+      if ($field['type'] == 'taxonomy_term_reference') {
+        $fields_names[$field_name] = $field_name;
+      }
+    }
+
+    if (!empty($fields_names)) {
+
+      //get pids
+      $query_option = db_select('trade_option', 't')
+        ->fields('t', array('pid'))
+        ->condition('t.field_value', $term->tid)
+        ->condition('t.field_name', array_keys($fields_names), 'IN');
+
+      $pids = $query_option->execute()->fetchCol();
+
+      // delete option price
+      if (!empty($pids)) {
+        db_delete('trade_option_price')
+          ->condition('pid', $pids, 'IN')
+          ->execute();
+
+        // delete option
+        db_delete('trade_option')
+          ->condition('pid', $pids)
+          ->execute();
+      }
+    }
+  }
+}
+
+function _trade_product_delete_option_with_price($nid = 0) {
+  if (!empty($nid)) {
+
+    //get pids
+    $query_option = db_select('trade_option', 't')
+      ->fields('t', array('pid'))
+      ->condition('t.nid', $nid);
+    $pids = $query_option->execute()->fetchCol();
+
+    // delete option price
+    if ($pids) {
+      db_delete('trade_option_price')
+        ->condition('pid', $pids, 'IN')
+        ->execute();
+    }
+
+    // delete option
+    db_delete('trade_option')
+      ->condition('nid', $nid)
+      ->execute();
+  }
+}
+
+function _trade_product_create_option_with_price($node = NULL) {
+  // create option price
+  if (!empty($node->trade_product['option_price'])) {
+
+    foreach ($node->trade_product['option_price'] as $field_name => $field_values) {
+      foreach ($field_values as $field_value => &$cells) {
+
+        if (is_object($cells)) {
+          $cells_use = TRUE;
+
+          if (isset($cells->price)) {
+            $cells_price = $cells->price;
+          }
+          else {
+            $cells_price = NULL;
+          }
+
+        }
+        else {
+          if (!empty($cells['use'])) {
+            $cells_use = $cells['use'];
+          }
+          else {
+            $cells_use = NULL;
+          }
+          if (!empty($cells['price'])) {
+            $cells_price = $cells['price'];
+          }
+          else {
+            $cells_price = NULL;
+          }
+        }
+
+        //insert option
+        if (!empty($cells_use)) {
+
+          //option default
+          db_insert('trade_option')->fields(array(
+            'nid' => $node->nid,
+            'field_name' => $field_name,
+            'field_value' => $field_value,
+            'is_default' => empty($cells['use']) ? 0 : $cells['is_default'],
+          ))->execute();
+        }
+
+        //insert price
+        if (!empty($cells_price)) {
+          $price = trim(filter_xss($cells_price, array()));
+          $pid = db_query('SELECT pid FROM {trade_option} WHERE nid = :nid AND field_name = :fn AND field_value = :fv',
+            array(':nid' => $node->nid, ':fn' => $field_name, ':fv' => $field_value))->fetchField();
+          if (!empty($price) && !empty($pid)) {
+            db_insert('trade_option_price')->fields(array(
+              'pid' => $pid,
+              'price' => $price,
+            ))->execute();
+          }
+        }
+      }
+
+    }
+  }
+}
+
+function trade_node_insert($node) {
+
+  if (isset($node->trade_product)) {
+    // price
+    db_insert('trade_price')
+      ->fields(array(
+        'nid' => $node->nid,
+        'price' => $node->trade_product['price']['trade_product_price'],
+      ))
+      ->execute();
+
+    //option price
+    _trade_product_delete_option_with_price($node->nid);
+    _trade_product_create_option_with_price($node);
+
+    //service
+    $data = serialize($node->trade_product['service']);
+    $service = array('nid' => $node->nid, 'data' => $data);
+    db_insert('trade_service')->fields($service)->execute();
+  }
+
+  // add product cache
+  if (variable_get('trade_product_cache_enable', TRUE)
+    && in_array($node->type, array_filter(variable_get('trade_product_node_types', array('product'))), TRUE)
+  ) {
+    $nids = array($node->nid);
+    $nodes = node_load_multiple($nids);
+    $nodes_view = _trade_node_view_multiple($nodes);
+  }
+
+  //clear upholstery cache on insert materials
+  if (variable_get('trade_product_upholstery_cache_enable', FALSE) && $node->type == 'material_upholster') {
+    db_delete('trade_uph_cache')->execute();
+  }
+}
+
+function trade_node_update($node) {
+
+  if (isset($node->trade_product)) {
+    $node_trade_product = $node->trade_product;
+
+
+    $exists = db_query("SELECT COUNT(*) FROM {trade_price} WHERE nid = :nid", array(':nid' => $node->nid))->fetchField();
+    if ($exists) {
+      db_update('trade_price')
+        ->fields(array('price' => $node->trade_product['price']['trade_product_price']))
+        ->condition('nid', $node->nid)
+        ->execute();
+    }
+    else {
+      trade_node_insert($node);
+    }
+
+    if (isset($node_trade_product['option_price'])) {
+      //option price
+      _trade_product_delete_option_with_price($node->nid);
+      _trade_product_create_option_with_price($node);
+    }
+
+    //service
+    $data = serialize($node->trade_product['service']);
+    $service = array('nid' => $node->nid, 'data' => $data);
+    db_delete('trade_service')->condition('nid', $node->nid)->execute();
+    db_insert('trade_service')->fields($service)->execute();
+  }
+
+  // update product cache
+  if (variable_get('trade_product_cache_enable', TRUE)
+    && in_array($node->type, array_filter(variable_get('trade_product_node_types', array('product'))), TRUE)
+  ) {
+    db_delete('trade_pcache')->condition('nid', $node->nid)->execute();
+    // Clear the static loading cache.
+    entity_get_controller('node')->resetCache(array($node->nid));
+    $nids = array($node->nid);
+    $nodes = node_load_multiple($nids);
+    $nodes_view = _trade_node_view_multiple($nodes);
+  }
+
+  if (variable_get('trade_product_upholstery_cache_enable', FALSE)) {
+    // update uph cache
+    if (_trade_is_product($node)) {
+      db_delete('trade_uph_cache')->condition('nid', $node->nid)->execute();
+      entity_get_controller('node')->resetCache(array($node->nid));
+
+      $product = node_load($node->nid);
+      $build = _trade_product_uphosltery_build($product, 'full');
+      if (!empty($build)) {
+        $record = array(
+          'nid' => $node->nid,
+          'data' => serialize($build),
+          'created' => format_date(REQUEST_TIME, 'custom', 'c'),
+        );
+        drupal_write_record('trade_uph_cache', $record);
+      }
+    }
+
+    //clear upholstery cache on update materials
+    if ($node->type == 'material_upholster') {
+      db_delete('trade_uph_cache')->execute();
+    }
+  }
+}
+
+/**
+ * Implements hook_flush_caches().
+ */
+function trade_flush_caches() {
+  foreach (array('trade_uph_cache', 'trade_pcache') as $table) {
+    db_delete($table)->execute();
+  }
+  return array();
+}
+
+/**
+ * Implements hook_node_delete().
+ */
+function trade_node_delete($node) {
+
+  // clean up trade price
+  db_delete('trade_price')
+    ->condition('nid', $node->nid)
+    ->execute();
+
+  // clear product option with prices
+  _trade_product_delete_option_with_price($node->nid);
+
+  // clear service
+  db_delete('trade_service')
+    ->condition('nid', $node->nid)
+    ->execute();
+
+  // delete product cache
+  if (variable_get('trade_product_cache_enable', TRUE)
+    && in_array($node->type, array_filter(variable_get('trade_product_node_types', array('product'))), TRUE)
+  ) {
+    db_delete('trade_pcache')->condition('nid', $node->nid)->execute();
+  }
+
+  if (variable_get('trade_product_upholstery_cache_enable', FALSE)) {
+    // delete product uph cache
+    if (_trade_is_product($node)) {
+      db_delete('trade_uph_cache')->condition('nid', $node->nid)->execute();
+    }
+
+    //clear upholstery cache on update materials
+    if ($node->type == 'material_upholster') {
+      db_delete('trade_uph_cache')->execute();
+    }
+  }
+}
+
+function trade_node_load($nodes, $types) {
+  $trade_node_types = array_filter(variable_get('trade_product_node_types', array('product')));
+  if (count(array_intersect($trade_node_types, $types))) {
+
+    //product price
+    $result = db_query('SELECT * FROM {trade_price} WHERE nid IN(:nids)', array(':nids' => array_keys($nodes)));
+    foreach ($result as $record) {
+      $nodes[$record->nid]->trade_product['price']['trade_product_price'] = $record->price;
+    }
+
+    //product option
+    $products_options = _trade_get_product_options(array_keys($nodes));
+    if (!empty($products_options)) {
+      foreach ($products_options as $nid => $product_options) {
+        $nodes[$nid]->trade_product['option_price'] = $product_options;
+      }
+    }
+
+    //service
+    $result = db_query('SELECT * FROM {trade_service} WHERE nid IN(:nids)', array(':nids' => array_keys($nodes)));
+    foreach ($result as $record) {
+      $nodes[$record->nid]->trade_product['service'] = unserialize($record->data);
+    }
+  }
+}
+
+function _trade_product_delete_option_with_price_on_delete($data, $mode = 'instance') {
+  if (($mode == 'instance' && !empty($data['entity_type']) && $data['entity_type'] == 'node')
+    || ($mode == 'field')
+  ) {
+
+    //get pids
+    $query_option = db_select('trade_option', 't')
+      ->fields('t', array('pid'))
+      ->condition('t.field_name', $data['field_name']);
+
+    if ($mode == 'instance') {
+      $query_option->innerJoin('node', 'n', 'n.nid = t.nid AND n.type = :b', array(':b' => $data['bundle']));
+    }
+
+    $pids = $query_option->execute()->fetchCol();
+
+    // delete option price
+    if (!empty($pids)) {
+      db_delete('trade_option_price')
+        ->condition('pid', $pids, 'IN')
+        ->execute();
+
+      // delete option
+      db_delete('trade_option')
+        ->condition('pid', $pids)
+        ->execute();
+    }
+  }
+}
+
+function _trade_product_get_pcache($node = NULL, $vm = 'teaser') {
+  $cache_data = db_query("SELECT data FROM {trade_pcache} WHERE nid = :nid AND view_mode = :vm", array(
+    ':nid' => $node->nid,
+    ':vm' => $vm
+  ))->fetchField();
+  return $cache_data;
+}
+
+function _trade_product_set_pcache($node_nid = 0, $node_view = array(), $vm = 'teaser') {
+  $fields = array(
+    'nid' => $node_nid,
+    'view_mode' => $vm,
+    'data' => serialize($node_view),
+    'created' => format_date(REQUEST_TIME, 'custom', 'c'),
+  );
+  $exists = db_query("SELECT COUNT(*) FROM {trade_pcache} WHERE nid = :nid AND view_mode = :vm", array(
+    ':nid' => $node_nid,
+    ':vm' => $vm
+  ))->fetchField();
+
+  if (!empty($exists)) {
+    db_update('trade_pcache')->fields($fields)->condition('nid', $node_nid)->condition('view_mode', $vm)->execute();
+  }
+  else {
+    db_insert('trade_pcache')->fields($fields)->execute();
+  }
+}
+
+function _trade_node_view_multiple($nodes, $view_mode = 'teaser', $weight = 0, $langcode = NULL) {
+  $m_path = drupal_get_path('module', 'trade');
+
+  // cache not use if exists add_to cart extra field
+  if (!empty($nodes) && variable_get('trade_product_cache_enable', TRUE)) {
+    $check_node = current($nodes);
+    $field_product_info_instances = field_info_instances('node', $check_node->type);
+    $display_this_fields = _trade_display_this_fields($field_product_info_instances, $check_node->type, $view_mode);
+    if (isset($display_this_fields['trade_product_add_to_order'])) {
+      variable_set('trade_product_cache_enable', FALSE);
+      drupal_flush_all_caches();
+    }
+  }
+
+  if (variable_get('trade_product_cache_enable', TRUE)
+    && $view_mode == 'teaser' || $view_mode == 'collections_elements'
+  ) {
+    field_attach_prepare_view('node', $nodes, $view_mode, $langcode);
+    entity_prepare_view('node', $nodes, $langcode);
+    $build = array();
+    foreach ($nodes as $node) {
+      $cache_data = _trade_product_get_pcache($node, $view_mode);
+      if ($cache_data) {
+        $node_view = unserialize($cache_data);
+
+        // add spinner attached
+        drupal_add_css($m_path . '/css/trade_spinner.css');
+        drupal_add_js($m_path . '/js/trade_spinner.js');
+      }
+      else {
+        $node_view = node_view($node, $view_mode, $langcode);
+        _trade_product_set_pcache($node->nid, $node_view, $view_mode);
+      }
+      $build['nodes'][$node->nid] = $node_view; //node_view($node, $view_mode, $langcode);
+      $build['nodes'][$node->nid]['#weight'] = $weight;
+      $weight++;
+    }
+    $build['nodes']['#sorted'] = TRUE;
+  }
+  else {
+    field_attach_prepare_view('node', $nodes, $view_mode, $langcode);
+    entity_prepare_view('node', $nodes, $langcode);
+    $build = array();
+    foreach ($nodes as $node) {
+      $build['nodes'][$node->nid] = node_view($node, $view_mode, $langcode);
+      $build['nodes'][$node->nid]['#weight'] = $weight;
+      $weight++;
+    }
+    $build['nodes']['#sorted'] = TRUE;
+  }
+  return $build;
+}
+
+/**
+ * Implements hook_taxonomy_term_delete().
+ */
+function trade_taxonomy_term_delete($term) {
+
+  // update referenced product cache
+  _trade_product_update_referenced_cache($term->tid);
+
+  // clear product option with prices on tid
+  _trade_product_delete_option_with_price_on_term($term);
+
+  if (variable_get('trade_product_upholstery_cache_enable', FALSE)) {
+    //clear upholstery cache on update materials
+    _trade_clear_uph_cache_change_term($term);
+  }
+
+}
+
+function _trade_is_fabricator_term($term = NULL) {
+  $is = FALSE;
+  if (!empty($term->vocabulary_machine_name) && ($field_fabricator = variable_get('trade_product_fabricator_field', ''))) {
+    $mn = $term->vocabulary_machine_name;
+    $field_info = field_info_field($field_fabricator);
+    if (!empty($field_info['settings']['allowed_values'])) {
+      foreach ($field_info['settings']['allowed_values'] as $voc) {
+        if ($mn == $voc['vocabulary']) {
+          $is = TRUE;
+          break;
+        }
+      }
+    }
+  }
+
+  return $is;
+}
+
+function _trade_clear_uph_cache_change_term($term) {
+  //clear upholstery cache on update materials
+
+  if (_trade_is_fabricator_term($term)) {
+    db_delete('trade_uph_cache')->execute();
+  }
+}
+
+function trade_product_option_picker_view($form, &$form_state, $options) {
+  $m_path = drupal_get_path('module', 'trade');
+  $product_node = menu_get_object();
+
+  if (!empty($options['view_mode']) && $options['view_mode'] == 'full' && !empty($product_node->nid) && $product_node->nid == $options['nid']) {
+    $extra_view_mode = 'full';
+  }
+  else {
+    $extra_view_mode = 'mini';
+  }
+
+  // include
+  $form['#attributes']['class'][] = 'trade-product-option-picker';
+  $form['#attached']['css'][] = $m_path . '/css/trade_product_option_picker.css';
+  $form['#attached']['js'][] = $m_path . '/js/trade_product_option_picker.js';
+  drupal_add_library('system', 'ui.tooltip');
+
+  // const options
+  $picker_options = array();
+
+  if (!empty($options['option_price'])) {
+    $option_price = $options['option_price'];
+
+    //option default
+    $option_default_value = 0;
+
+    foreach ($option_price as $tid => $option) {
+
+      //option default
+      if (!empty($option->is_default)) {
+        $option_default_value = $tid;
+      }
+
+      $product_field_option = array(
+        '#prefix' => '<span class="trade-product-picker-option">',
+        '#suffix' => '</span>',
+      );
+
+      // theme_image_formatter()
+      $product_field_option['inner'] = array(
+        '#prefix' => '<span class="trade-product-picker-option-inner">',
+        '#suffix' => '</span>',
+      );
+
+      $product_field_option['inner']['title'] = array(
+        '#prefix' => '<span class="trade-product-picker-option-inner-title">',
+        '#suffix' => '</span>',
+        'inner' => array('#markup' => $option->trade_product_option_entity->name),
+      );
+
+      // tooltip
+      if (!empty($option->price)) {
+        $product_field_option['preview'] = array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array(
+              'trade-product-option-picker-preview',
+              'trade-tooltip-content',
+              'element-invisible'
+            )
+          ),
+          'wr' => array(
+            '#type' => 'container',
+            '#attributes' => array('class' => array('trade-product-option-picker-preview-wr')),
+          )
+        );
+
+        if (strpos($option->price, '-') === 0) {
+          $sign = '-';
+          $option_price = substr($option->price, 1);
+        }
+        else {
+          $sign = '+';
+          $option_price = $option->price;
+        }
+        $currency = _trade_get_currency(variable_get('trade_currency', 'RUB'));
+        $product_field_option['preview']['wr']['text'] = array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array(
+              'trade-product-option-picker-preview-wr-text',
+            )
+          ),
+          'content' => array(
+            '#markup' => (!empty($option->price) ? ($sign . '<span class="trade-price-wr">' . _trade_format_number($option_price) . '</span><span class="trade-currency-wr">' . $currency[1] . '</span>') : '')
+          ),
+        );
+      }
+
+      $picker_options[$tid] = drupal_render($product_field_option);
+    }
+  }
+
+  if (!empty($options['field_name'])) {
+    $form[$options['field_name']] = array(
+      '#type' => 'radios',
+      '#required' => TRUE,
+      '#default_value' => $option_default_value,
+      '#attributes' => array(
+        'class' => array(
+          str_replace('_', '-', $options['field_name']),
+          'trade-option-picker',
+        ),
+        'data-relation' => 'master',
+        'data-nid' => $options['nid'],
+        'data-field' => $options['field_name'],
+      ),
+      '#options' => $picker_options,
+    );
+  }
+  return $form;
+}
+
+function _trade_display_this_fields($field_product_info_instances = array(), $node_type = '', $view_mode = 'default') {
+  $display_this_fields = array();
+  $extra_fields = field_info_extra_fields('node', $node_type, 'display');
+
+  if (!empty($field_product_info_instances)) {
+    foreach ($field_product_info_instances as $field_name => $field_product_info_instance) {
+      if ($field_name == 'field_product_sizer_swimsuit') {
+
+      }
+      if (isset($field_product_info_instance['display'][$view_mode])) {
+        $field_instance_display = $field_product_info_instance['display'][$view_mode];
+
+      }
+      elseif (isset($field_product_info_instance['display']['default'])) {
+        $field_instance_display = $field_product_info_instance['display']['default'];
+
+      }
+      else {
+        $field_instance_display = array();
+
+      }
+
+      if (!empty($field_instance_display) && $field_instance_display['type'] != 'hidden') {
+        $weight = isset($field_instance_display['weight']) ? $field_instance_display['weight'] : 0;
+        $display_this_fields[$field_name] = $field_instance_display;
+      }
+    }
+  }
+  if (!empty($extra_fields)) {
+    foreach ($extra_fields as $field_name => $extra_field) {
+      if (!empty($extra_field['display'][$view_mode]['visible'])) {
+        $display_this_fields[$field_name] = $extra_field['display'][$view_mode];
+      }
+    }
+  }
+
+  return $display_this_fields;
+}
+
+function trade_node_view($node, $view_mode) {
+  global $language;
+
+
+  $current_node_page = menu_get_object();
+  $currency = _trade_get_currency(variable_get('trade_currency', 'RUB'));
+  $product_node_types = array_filter(variable_get('trade_product_node_types', array('product')));
+  $this_node_full_page = ($view_mode == 'full' && !empty($current_node_page->nid) && $current_node_page->nid == $node->nid);
+
+  $field_product_info_instances = field_info_instances('node', $node->type);
+  $display_this_fields = _trade_display_this_fields($field_product_info_instances, $node->type, $view_mode);
+
+  // product extra fields build
+  if (!empty($node->trade_product)) {
+
+    // product option color picker
+    $product_color_picker_field = variable_get('trade_product_option_color_picker_field_' . $node->type, '');
+    if (!empty($product_color_picker_field) && !empty($node->trade_product['option_price'][$product_color_picker_field])) {
+      $options = array(
+        'nid' => $node->nid,
+        'field_name' => $product_color_picker_field,
+        'option_price' => $node->trade_product['option_price'][$product_color_picker_field],
+        'view_mode' => $view_mode
+      );
+    }
+    else {
+      $options = array();
+    }
+
+    if (!empty($options) && isset($display_this_fields['trade_product_option_color_picker'])) {
+      $weight = $display_this_fields['trade_product_option_color_picker']['weight'];
+
+      // color picker
+      $title = t('Сolor');
+      $tag = 'div';
+      $form_var = drupal_get_form('trade_product_option_color_picker_view', $options);
+      $node->content['trade_product_option_color_picker'] = array(
+        '#type' => 'container',
+        '#weight' => $weight,
+        '#attributes' => array('class' => array('trade-extra-field')),
+        'title' => array(
+          '#type' => 'html_tag',
+          '#tag' => $tag,
+          '#attributes' => array('class' => array('trade-extra-field-title')),
+          '#value' => $title,
+        ),
+        'content' => array('#markup' => drupal_render($form_var))
+      );
+    }
+
+    //product option color view
+    if (!empty($options) && $view_mode == 'teaser') {
+      // $options['disabled'] = TRUE;
+      $product_node = menu_get_object();
+      if (!empty($product_node) && !empty($options['view_mode']) && $options['view_mode'] == 'full' && $product_node->nid == $node->nid && arg(2) == 'edit') {
+        $options['view_mode'] = 'teaser';
+      }
+      $form_var = drupal_get_form('trade_product_option_color_picker_view', $options);
+      $node->content['trade_product_option_color_viewer'] = array(
+        '#title' => t('Enabled colors'),
+        '#type' => 'container',
+        '#attributes' => array('class' => array('trade-product-option-color-viewer')),
+        'inner' => array('#markup' => drupal_render($form_var))
+      );
+    }
+
+    // add to order form
+    if (isset($display_this_fields['trade_product_add_to_order'])) {
+      if (in_array($node->type, $product_node_types, TRUE)) {
+        $form_release = 'trade_product_add_to_order_form_' . $node->nid;
+        $form_var = drupal_get_form($form_release, $node, $view_mode);
+        $node->content['trade_product_add_to_order'] = array(
+          '#markup' => drupal_render($form_var),
+          '#weight' => $display_this_fields['trade_product_add_to_order']['weight']
+        );
+      }
+    }
+
+    $trade_product_node_types_options = array_filter(variable_get('trade_product_node_types_options_' . $node->type, array()));
+    $field_options_info_instances = array_intersect_key($field_product_info_instances, $trade_product_node_types_options);
+
+    if (!empty($field_options_info_instances)) {
+      foreach ($field_options_info_instances as $field_options_info_instance_name => $field_options_info_instance) {
+
+
+        if (isset($display_this_fields[$field_options_info_instance_name])) {
+          $field_instance_display = $display_this_fields[$field_options_info_instance_name];
+          $current_node_page = menu_get_object();
+
+          if (!empty($node->trade_product['option_price'][$field_options_info_instance_name])) {
+            $options = array(
+              'nid' => $node->nid,
+              'field_name' => $field_options_info_instance_name,
+              'option_price' => $node->trade_product['option_price'][$field_options_info_instance_name],
+              'view_mode' => $view_mode
+            );
+
+            if ($field_instance_display['label'] != 'hidden') {
+              if (module_exists('i18n_field')) {
+                $field_title_single = i18n_field_translate_property($field_options_info_instance, 'label');
+              }
+              else {
+                $title = $field_options_info_instance['label'];
+              }
+            }
+
+            $tag = 'div';
+            $render_var = drupal_get_form('trade_product_option_picker_view', $options);
+            $node->content[$field_options_info_instance_name] = array(
+              '#type' => 'container',
+              '#weight' => $field_instance_display['weight'],
+              '#attributes' => array(
+                'class' => array(
+                  'trade-extra-field',
+                )
+              ),
+              'title' => array(
+                '#type' => 'html_tag',
+                '#tag' => $tag,
+                '#attributes' => array(
+                  'class' => array('trade-extra-field-title')
+                ),
+                '#value' => $title,
+              ),
+              'content' => array(
+                '#markup' => drupal_render($render_var)
+              ),
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // trade product gallery
+  if ($this_node_full_page && !empty($node->trade_product)) {
+    $items = field_get_items('node', $node, TRADE_FIELD_PRODUCT_IMAGES);
+    $sett['image_preview_is'] = TRADE_PRODUCT_PREVIEW_IS;
+    $sett['image_thumb_is'] = TRADE_PRODUCT_THUMB_IS;
+    $sett['image_nav_view_count'] = TRADE_PRODUCT_GALLERY_NAV_COUNT;
+    if (!empty($items)) {
+      $node->content['trade_product_gallery'] = array(
+        '#theme' => 'trade_product_image_gallery',
+        '#items' => $items,
+        '#sett' => $sett,
+      );
+    }
+  }
+
+  // add product price
+  if (($this_node_full_page || $view_mode == 'collections_elements' || $view_mode == 'teaser')
+    && !empty($node->trade_product['price']['trade_product_price'])
+  ) {
+
+    $m_path = drupal_get_path('module', 'trade');
+    drupal_add_css($m_path . '/css/trade.css');
+    $node->content['trade_product_price'] = array(
+      '#theme' => 'trade_product_price_view',
+      '#price' => $node->trade_product['price']['trade_product_price'],
+      '#nid' => $node->nid
+    );
+  }
+
+  // service
+  if ($this_node_full_page && !empty($node->trade_product)) {
+    $service_values = array();
+
+    // trade_product_service
+    if (isset($node->trade_product['service'])) {
+      $node_trade_product_service = $node->trade_product['service'];
+    }
+    else {
+      $node_trade_product_service = array();
+    }
+
+    // shipping
+
+    // fix_amount
+    if (!empty($node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE]['fix_amount']['amount'])) {
+      $shipping_fix_amount_value = $node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE]['fix_amount']['amount'] . ' ' . $currency[1];
+    }
+    elseif (isset($node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE]['fix_amount']['amount']) && $node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE]['fix_amount']['amount'] === '0') {
+      $shipping_fix_amount_value = t('free');
+    }
+
+    if (!empty($shipping_fix_amount_value)) {
+      $service_values['shipping'][] = t('On city') . ' - ' . $shipping_fix_amount_value;
+    }
+
+    // price_on_distance
+    if (!empty($node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE]['price_on_distance']['price'])) {
+      $shipping_price_on_distance_value = $node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE]['price_on_distance']['price'] . ' ' . $currency[1] . '/км';
+    }
+    elseif (isset($node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE]['price_on_distance']['price']) && $node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE]['price_on_distance']['price'] === '0') {
+      $shipping_price_on_distance_value = t('free');
+    }
+
+    if (!empty($shipping_price_on_distance_value)) {
+      $service_values['shipping'][] = t('From city') . ' - ' . $shipping_price_on_distance_value;
+    }
+
+    //custom shipping
+    if (db_table_exists('trade_shipping')) {
+      $custom_shipping_objs = trade_shipping_load_multiply();
+      foreach ($custom_shipping_objs as $custom_shipping_key => $custom_shipping_obj) {
+        $element_key = 'custom_' . $custom_shipping_obj->sid;
+
+        $shipping_fix_amount_value = '';
+        if (!empty($node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE][$element_key]['amount'])) {
+          $shipping_fix_amount_value = $node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE][$element_key]['amount'] . ' ' . $currency[1];
+        }
+        elseif (isset($node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE][$element_key]['amount'])
+          && $node_trade_product_service[TRADE_SERVICE_SHIPPING_TYPE][$element_key]['amount'] === '0'
+        ) {
+          $shipping_fix_amount_value = t('free');
+        }
+
+        if ($shipping_fix_amount_value !== '') {
+          $service_values['shipping'][] = $custom_shipping_obj->title . ' - ' . $shipping_fix_amount_value;
+        }
+      }
+    }
+
+
+    //lifting
+    //lift
+    if (!empty($node_trade_product_service[TRADE_SERVICE_LIFTING_TYPE]['lift']['type'])) {
+      $title = '';
+      switch ($node_trade_product_service[TRADE_SERVICE_LIFTING_TYPE]['lift']['type']) {
+        case 'free':
+          $title = t('Free');
+          break;
+        case 'amount':
+          $title = !empty($node_trade_product_service[TRADE_SERVICE_LIFTING_TYPE]['lift']['amount'])
+            ? $node_trade_product_service[TRADE_SERVICE_LIFTING_TYPE]['lift']['amount'] . ' ' . $currency[1]
+            : '';
+          break;
+        case 'percent_on_amount':
+          $title = t('3%, not less 200 rub.');
+          break;
+      }
+      if ($title) {
+        $service_values['lifting'][] = t('Lift') . ' - ' . $title;
+      }
+    }
+
+    //steps
+    if (!empty($node_trade_product_service[TRADE_SERVICE_LIFTING_TYPE]['steps']['type'])) {
+      $title = '';
+      switch ($node_trade_product_service[TRADE_SERVICE_LIFTING_TYPE]['steps']['type']) {
+        case 'free':
+          $title = t('Free');
+          break;
+        case 'price':
+          $title = !empty($node_trade_product_service[TRADE_SERVICE_LIFTING_TYPE]['steps']['price'])
+            ? ($node_trade_product_service[TRADE_SERVICE_LIFTING_TYPE]['steps']['price'] . ' ' . $currency[1] . '/' . 'floor')
+            : '';
+          break;
+        case 'percent_on_amount':
+          $title = t('3%, not less 250 rub.');
+          break;
+      }
+      if ($title) {
+        $service_values['lifting'][] = t('On stairs') . ' - ' . $title;
+      }
+    }
+
+    //assembly
+    //lift
+    if (!empty($node_trade_product_service[TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['type'])) {
+      $title = '';
+      switch ($node_trade_product_service[TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['type']) {
+        case 'free':
+          $title = t('Free');
+          break;
+        case 'amount':
+          $title = !empty($node_trade_product_service[TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['amount'])
+            ? $node_trade_product_service[TRADE_SERVICE_ASSEMBLY_TYPE]['assembly']['amount'] . ' ' . $currency[1]
+            : '';
+          break;
+        case 'percent_on_amount_15':
+          $title = t('15%, not less 500 rub.');
+          break;
+        case 'percent_on_amount_10':
+          $title = t('10%, not less 700 rub.');
+          break;
+      }
+      if ($title) {
+        $service_values['assembly'][] = $title;
+      }
+    }
+
+    $node->content['trade_product_service'] = array(
+      '#type' => 'container',
+      '#attributes' => array('class' => array('trade-product-service', 'trade-grid')),
+    );
+
+    foreach ($service_values as $service_name => $service_fields) {
+      switch ($service_name) {
+        case 'shipping':
+          $title = t('Shipping');
+          break;
+        case 'lifting':
+          $title = t('lifting');
+          break;
+        case 'assembly':
+          $title = t('Assembly');
+          break;
+      }
+      $node->content['trade_product_service'][$service_name] = array(
+        '#type' => 'container',
+        '#attributes' => array('class' => array('trade-product-service-shipping', 'trade-grid-row')),
+        'title' => array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array(
+              'trade-product-service-shipping-title',
+              'trade-grid-cell',
+              'trade-product-service-field-title'
+            )
+          ),
+          'cell_inner' => array(
+            '#type' => 'container',
+            '#attributes' => array('class' => array('trade-cell-inner')),
+            'inner' => array('#markup' => $title),
+          ),
+        ),
+        'value' => array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array(
+              'trade-product-service-shipping-value',
+              'trade-grid-cell',
+              'trade-product-service-field-items'
+            )
+          ),
+          'cell_inner' => array(
+            '#type' => 'container',
+            '#attributes' => array('class' => array('trade-cell-inner')),
+            'inner' => array('#markup' => '<div class="trade-item-list">' . implode('</div><div class="trade-item-list">', $service_values[$service_name]) . '</div>'),
+          ),
+        ),
+      );
+    }
+  }
+
+  // add product dimensions
+  foreach (array('field_product_height', 'field_product_width', 'field_product_depth') as $dimension_field_name) {
+    if (!empty($node->content[$dimension_field_name])) {
+      $node->content['trade_product_dimensions'][$dimension_field_name] = $node->content[$dimension_field_name];
+    }
+  }
+  if (!empty($node->content['trade_product_dimensions'])) {
+    $title = '';
+    if ($view_mode == 'full') {
+      $title = t('Dimensions');
+    }
+    elseif ($view_mode == 'teaser') {
+      $title = t('Dimensions') . ':';
+    }
+    $node->content['trade_product_dimensions']['#prefix'] = '<div class="trade-extra-field trade-product-dimensions-field">' . (!empty($title) ? '<h2 class="trade-extra-field-title">' . $title . '</h2>' : '') . '<div class="trade-product-dimensions">';
+    $node->content['trade_product_dimensions']['#suffix'] = '</div></div>';
+  }
+
+
+// product option upholstery picker
+// extra field trade_product_option_upholstery_picker
+// get upholstery fields
+  if ($this_node_full_page && !empty($node->trade_product['option_price'][_trade_get_upholstery_field_name()])) {
+
+    if (variable_get('trade_product_upholstery_ajax_callback_use', FALSE)) {
+      $upholstery_content_markup = '<div data-nid="' . $node->nid . '" class="trade-product-option-upholstery-picker-container-ajax-load">&nbsp;</div>';
+    }
+    else {
+      $upholstery_content_markup = _trade_get_upholstery_markup($node);
+    }
+
+    $node->content['trade_product_option_upholstery_picker'] =
+      array(
+        '#type' => 'container',
+        '#attributes' => array('class' => array('trade-extra-field-upholstery')),
+        'title' => array(
+          '#type' => 'html_tag',
+          '#tag' => 'h2',
+          '#attributes' => array('class' => array('trade-extra-field-title')),
+          '#value' => t('Choice another upholstery'),
+        ),
+        'content' => array('#markup' => $upholstery_content_markup),
+      );
+
+  }
+
+}
+
+
+function _trade_get_upholstery_markup($node = NULL) {
+  $upholstery_content_markup = '';
+
+//use cache select
+  if (variable_get('trade_product_upholstery_cache_enable', FALSE)) {
+    $data = db_select('trade_uph_cache', 'tuc')->fields('tuc', array('data'))->condition('tuc.nid', $node->nid)
+      ->execute()
+      ->fetchField();
+  }
+  else {
+    $data = array();
+  }
+
+  if (!empty($data)) {
+    $upholstery_data = unserialize($data);
+    $upholstery_content_markup = drupal_render($upholstery_data);
+  }
+  else {
+    $upholstery_data = _trade_product_uphosltery_build($node);
+    $upholstery_content_markup = drupal_render($upholstery_data);
+
+//use cache write
+    if (variable_get('trade_product_upholstery_cache_enable', FALSE)) {
+      if (!empty($upholstery_content_markup)) {
+        $record = array(
+          'nid' => $node->nid,
+          'data' => serialize($upholstery_data),
+          'created' => format_date(REQUEST_TIME, 'custom', 'c')
+        );
+        drupal_write_record('trade_uph_cache', $record);
+      }
+    }
+
+  }
+  return $upholstery_content_markup;
+}
+
+function _trade_get_upholstery_field_name() {
+  return variable_get('trade_product_upholstery_collection_field', 'field_material_upholster_collect');
+}
+
+function _trade_product_uphosltery_build($node = NULL, $view_mode = 'full', $category = NULL, $collection = NULL) {
+
+  $trade_product_option_upholstery_picker = & drupal_static(__FUNCTION__);
+  $materials_build = array();
+
+  $field_names = array_filter(variable_get('trade_product_node_types_upholstery_options_' . $node->type, array()));
+
+  if ((empty($category) && empty($collection) && !isset($trade_product_option_upholstery_picker[$node->nid][$view_mode]))
+    || (!empty($category) && !empty($collection))
+  ) {
+    if (!empty($field_names)) {
+
+      // check product on present this field
+      $fields_exists = TRUE;
+      foreach ($field_names as $field_name => &$field_title) {
+        if (!isset($node->{$field_name})) {
+          $fields_exists = FALSE;
+          break;
+        }
+        else {
+          $field_info_instance = field_info_instance('node', $field_name, $node->type);
+          $field_title = $field_info_instance['label'];
+        }
+      }
+
+      if ($fields_exists) {
+
+        // get upholstery entity
+        // get entity type
+        $material_bundle = _trade_get_material_bundle(current(array_keys($field_names)));
+        if ($material_bundle) {
+
+          // get collection field
+          $collection_field = variable_get('trade_product_upholstery_collection_field', 'field_material_upholster_collect');
+          if (!empty($collection_field)) {
+
+            if (!empty($node->trade_product['option_price'][$collection_field])) {
+              $option_field = $node->trade_product['option_price'][$collection_field];
+
+              $material_data = _trade_product_get_material_entity($collection_field, $material_bundle, $option_field, $category, $collection);
+
+
+              if (!empty($material_data)) {
+                $options = array(
+                  'nid' => $node->nid,
+                  'field_names' => $field_names,
+                  'material_data' => $material_data,
+                );
+
+                $trade_product_option_upholstery_picker_view_form_name_key = 'trade_product_option_upholstery_picker_view_' . $node->nid;
+
+
+                $upholstery_picker_data = drupal_get_form($trade_product_option_upholstery_picker_view_form_name_key, $options, $category, $collection);
+
+                if (!empty($upholstery_picker_data)) {
+                  if (empty($category) && empty($collection)) {
+                    $node->content['trade_product_option_upholstery_picker'] = array(
+                      '#title' => t('trade product option upholstery picker'),
+                      '#markup' => '<div data-nid="' . $node->nid . '" class="trade-product-option-upholstery-picker-container">' . drupal_render($upholstery_picker_data) . '</div>'
+                    );
+                    $trade_product_option_upholstery_picker[$node->nid][$view_mode] = $node->content['trade_product_option_upholstery_picker'];
+                  }
+                  else {
+                    // materials
+                    $materials_build = array(
+                      '#markup' => drupal_render($upholstery_picker_data),
+                    );
+                  }
+                }
+              }
+
+            }
+          }
+        }
+      }
+
+
+    }
+  }
+
+  if (empty($category) && empty($collection)) {
+    $return_build = !empty($trade_product_option_upholstery_picker[$node->nid][$view_mode]) ? $trade_product_option_upholstery_picker[$node->nid][$view_mode] : array();
+  }
+  else {
+    $return_build = $materials_build;
+  }
+
+  return $return_build;
+}
+
+function trade_product_option_upholstery_picker_view($form, &$form_state, $options, $category_mat = NULL, $collection_mat = NULL) {
+  global $language;
+
+  $m_path = drupal_get_path('module', 'trade');
+
+  // include
+  $form['#attributes']['class'][] = 'trade-product-option-upholstery-picker';
+  $form['#attached']['css'][] = $m_path . '/css/trade_upholstery_picker.css';
+  $form['#attached']['js'][] = $m_path . '/js/trade_upholstery_picker.js';
+
+  // include tooltip
+  $form['#attached']['css'][] = $m_path . '/css/trade_color_picker.css';
+  drupal_add_library('system', 'ui.tooltip');
+
+  //prepare data
+  $tree = $options['material_data'];
+  $materials_nodes = array();
+
+  $form['wr'] = array(
+    '#prefix' => '<div class="trade-vertical-tabs-container-wr"><div class="trade-vertical-tabs-container"><div class="trade-vertical-tabs-wr">',
+    '#suffix' => '</div></div></div>',
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('trade-vertical-tabs')
+    ),
+  );
+
+  $form['wr']['base_tabs_side'] = array(
+    '#prefix' => '<div class="trade-vertical-tabs-horizontal-side trade-vertical-tabs-cell">',
+    '#suffix' => '</div>',
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('trade-vertical-tabs-horizontal-side-inner', 'trade-vertical-tabs-cell-inner')
+    ),
+  );
+
+  $form['wr']['base_tabs_side']['collections_ul'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('trade-vertical-tabs-collections-wr')
+    ),
+  );
+
+  $form['wr']['base_tabs_side']['materials_ul'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('trade-vertical-tabs-materials-wr')
+    ),
+  );
+
+  $form['wr']['vertical_tabs_side'] = array(
+    '#prefix' => '<div class="trade-vertical-tabs-vertical-side trade-vertical-tabs-cell"><div class="trade-vertical-tabs-vertical-side-inner">',
+    '#suffix' => '</div><div class="trade-vertical-tabs-vertical-side-inner-uho"></div></div>',
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('trade-vertical-tabs-vertical-side-inner-inner', 'trade-vertical-tabs-cell-inner')
+    ),
+  );
+
+  $form['wr']['vertical_tabs_side']['categories'] = array(
+    '#prefix' => '<ul class="trade-vertical-list">',
+    '#suffix' => '</ul>'
+  );
+
+
+  foreach ($tree as $category_tid => &$category) {
+
+    // separator price
+    $currency_abbr = variable_get('trade_currency', 'RUB');
+    $currency = _trade_get_currency($currency_abbr);
+
+    $category_link_text = $category['data'];
+    $category_price = '';
+
+    if (strpos($category['data'], $currency[1])) {
+      $category_split = explode(' ', $category['data']);
+      $count_cat_splite = count($category_split);
+      if ($count_cat_splite > 2) {
+        $pos_currency = $count_cat_splite - 2;
+        $category_link_text = implode(' ', array_slice($category_split, 0, $pos_currency));
+        $category_price = implode(' ', array_slice($category_split, $pos_currency, 2));
+      }
+    }
+
+    $level = 1;
+    $form['wr']['vertical_tabs_side']['categories']["category_{$category_tid}"] = array(
+      '#prefix' => '<li>',
+      'data' => array(
+        '#markup' => '<div class="trade-table-cell"><a data-level="' . $level . '" data-id="' . "category_{$category_tid}" . '" href="#" class="trade-nav-link">' . $category_link_text . '</a>' . '</div>'
+          . '<div class="trade-table-cell trade-product-category-price-wr">' . (!empty($category_price) ? '<span class="trade-product-category-price">' . $category_price . '</span>' : '') . '</div>',
+      ),
+      '#suffix' => '</li>'
+    );
+
+    $form['wr']['base_tabs_side']['collections_ul']["category_{$category_tid}"] = array(
+      '#prefix' => '<ul data-level="' . $level . '" data-parent="' . "category_{$category_tid}" . '" class="trade-horizontal-list trade-state-close">',
+      '#suffix' => '</ul>'
+    );
+    $collection_count = 0;
+    foreach ($category['children'] as $collection_tid => &$collection) {
+
+      $level = 2;
+      $form['wr']['base_tabs_side']['collections_ul']["category_{$category_tid}"]["collection_{$collection_tid}"] = array(
+        '#prefix' => '<li>',
+        '#suffix' => '</li>'
+      );
+
+
+      if ($collection_count) {
+        $collection_class = 'trade-nav-link trade-ajax-content-need-load';
+      }
+      else {
+        $collection_class = 'trade-nav-link';
+      }
+      $form['wr']['base_tabs_side']['collections_ul']["category_{$category_tid}"]["collection_{$collection_tid}"]['data'] = array(
+        '#markup' => '<div class="trade-nav-link-wr">'
+          . '<a  data-level="' . $level . '" data-id="' . "category_{$category_tid}_collection_{$collection_tid}" . '" href="#" class="' . $collection_class . '">'
+          . '<span>'
+          . $collection['data']
+          . '</span>'
+          . '</a>'
+          . '</div>',
+      );
+
+      // materials
+      if (!$collection_count) {
+        if (!empty($category_mat) && !empty($collection_mat)) {
+          $class = 'trade-float-list';
+        }
+        else {
+          $class = 'trade-float-list trade-state-close';
+        }
+        $form['wr']['base_tabs_side']['materials_ul']["category_{$category_tid}"]["collection_{$collection_tid}"]['materials'] = array(
+          '#prefix' => '<ul data-level="' . $level . '" data-parent="' . "category_{$category_tid}_collection_{$collection_tid}" . '" class="' . $class . '">',
+          '#suffix' => '</ul>'
+        );
+
+        $cur_nodes = node_load_multiple(array_keys($collection['children']));
+
+        if (!empty($cur_nodes)) {
+          $collection_count++;
+        }
+
+        $materials_nodes += $cur_nodes;
+
+        foreach ($collection['children'] as $material_nid => &$product_option_data) {
+
+
+          if (!empty($materials_nodes[$material_nid])) {
+
+            $material_element['material_view'] = array(
+              '#type' => 'container',
+              '#attributes' => array(
+                'class' => array('trade-product-upholster-picker-material-view')
+              ),
+            );
+
+            $material_element['material_view']['title'] = array(
+              '#prefix' => '<div class="trade-product-title">',
+              '#suffix' => '</div>',
+              '#markup' => $materials_nodes[$material_nid]->title,
+            );
+
+            if (!empty($materials_nodes[$material_nid]->field_material_upholster_image[LANGUAGE_NONE][0])) {
+
+              $material_element['material_view']['image'] = array(
+                '#theme' => 'image_formatter',
+                '#prefix' => '<div class="trade-thumb-wr">',
+                '#suffix' => '</div>',
+                '#image_style' => TRADE_PRODUCT_UPHOLSTER_PICKER_MATERIAL_IS,
+                '#item' => $materials_nodes[$material_nid]->field_material_upholster_image[LANGUAGE_NONE][0],
+              );
+              $material_element['material_view']['image']['#item']['attributes']['class'][]
+                = 'trade-img-data-src';
+
+              $tooltip = array();
+              $tooltip['preview'] = array(
+                '#type' => 'container',
+                '#attributes' => array(
+                  'class' => array(
+                    'trade-product-color-picker-option-preview',
+                    'trade-tooltip-content',
+                    'element-invisible'
+                  )
+                ),
+                'wr' => array(
+                  '#type' => 'container',
+                  '#attributes' => array('class' => array('trade-product-color-picker-option-preview-wr')),
+                )
+              );
+              $tooltip['preview']['wr']['image'] = array(
+                '#type' => 'container',
+                '#attributes' => array('class' => array('trade-product-color-picker-option-preview-wr-image')),
+                'image_formatter' => array(
+                  '#theme' => 'image_formatter',
+                  '#image_style' => TRADE_PRODUCT_COLOR_PICKER_PREVIEW_IS,
+                  '#item' => $materials_nodes[$material_nid]->field_material_upholster_image[LANGUAGE_NONE][0],
+                )
+              );
+              $tooltip['preview']['wr']['image']['image_formatter']['#item']['attributes']['class'][] = 'trade-img-data-src';
+
+              $currency = _trade_get_currency(variable_get('trade_currency', 'RUB'));
+              $tooltip['preview']['wr']['text'] = array(
+                '#type' => 'container',
+                '#attributes' => array('class' => array('trade-product-color-picker-option-preview-wr-text')),
+                'content' => array(
+                  '#markup' => '<span class="trade-name-wr">' . $materials_nodes[$material_nid]->title . '</span>'
+                ),
+              );
+              $material_element['material_view']['tooltip'] = $tooltip;
+            }
+          }
+
+
+          foreach ($options['field_names'] as $field_name => $field_title) {
+            $material_element[$field_name] = array(
+              '#type' => 'radios',
+              '#options' => array($material_nid => $field_title),
+              '#attributes' => array(
+                'class' => array(
+                  str_replace('_', '-', $field_name),
+                ),
+                'data-relation' => 'master',
+                'data-nid' => $options['nid'],
+                'data-field' => $field_name,
+              ),
+            );
+          }
+
+          $form['wr']['base_tabs_side']['materials_ul']["category_{$category_tid}"]["collection_{$collection_tid}"]['materials'][$material_nid] = array(
+            '#prefix' => '<li>',
+            'data' => array(
+              '#type' => 'container',
+              '#attributes' => array(
+                'class' => array('trade-product-upholster-picker-material')
+              ),
+            ),
+            '#suffix' => '</li>'
+          );
+
+          $form['wr']['base_tabs_side']['materials_ul']["category_{$category_tid}"]["collection_{$collection_tid}"]['materials'][$material_nid]['data'] += $material_element;
+
+        }
+
+        if (!empty($category_mat) && !empty($collection_mat)) {
+          $form = array(
+            'materials' => $form['wr']['base_tabs_side']['materials_ul']["category_{$category_tid}"]["collection_{$collection_tid}"]['materials'],
+          );
+        }
+
+      }
+      else {
+        $materials_class = 'trade-float-list trade-state-close trade-ajax-content-not-load';
+        $form['wr']['base_tabs_side']['materials_ul']["category_{$category_tid}"]["collection_{$collection_tid}"]['materials'] = array(
+          '#prefix' => '<ul data-level="' . $level . '" data-parent="' . "category_{$category_tid}_collection_{$collection_tid}" . '" class="' . $materials_class . '">',
+          'ajax_premessage' => array('#markup' => '<li class="trade-ajax-loading-message">' . t('Loading') . ' ...' . '</li>'),
+          '#suffix' => '</ul>',
+        );
+      }
+
+      //end materials
+
+    }
+
+  }
+
+  return $form;
+}
+
+function trade_product_option_color_picker_view($form, &$form_state, $options) {
+  $m_path = drupal_get_path('module', 'trade');
+  $product_node = menu_get_object();
+
+  if (!empty($options['view_mode']) && $options['view_mode'] == 'full' && !empty($product_node->nid) && $product_node->nid == $options['nid']) {
+    $extra_view_mode = 'full';
+  }
+  else {
+    $extra_view_mode = 'mini';
+  }
+
+  // include
+  $form['#attributes']['class'][] = 'trade-product-option-color-picker';
+  $form['#attached']['css'][] = $m_path . '/css/trade_color_picker.css';
+  $form['#attached']['js'][] = $m_path . '/js/trade_color_picker.js';
+  drupal_add_library('system', 'ui.tooltip');
+
+  // const options
+
+  $color_options = array();
+
+  if (!empty($options['option_price'])) {
+    $option_price = $options['option_price'];
+
+    //option default
+    $option_default_value = 0;
+
+    foreach ($option_price as $tid => $option) {
+
+      //option default
+      if (!empty($option->is_default)) {
+        $option_default_value = $tid;
+      }
+
+      $color_option = array(
+        '#prefix' => '<span class="trade-product-color-picker-option">',
+        '#suffix' => '</span>',
+      );
+
+      // theme_image_formatter()
+      $color_option['thumbnail'] = array(
+        '#prefix' => '<span class="trade-product-color-picker-option-thumb">',
+        '#suffix' => '</span>',
+      );
+      if (isset($option->trade_product_option_entity->field_color_image[LANGUAGE_NONE][0])) {
+        $color_option['thumbnail']['image'] = array(
+          '#prefix' => '<span class="trade-product-color-picker-option-thumb-image trade-view-mode-' . $extra_view_mode . '">',
+          '#suffix' => '</span>',
+          'image_formatter' => array(
+            '#theme' => 'image_formatter',
+            '#image_style' => TRADE_PRODUCT_COLOR_PICKER_THUMB_IS,
+            '#item' => $option->trade_product_option_entity->field_color_image[LANGUAGE_NONE][0],
+          )
+        );
+      }
+
+      if ($extra_view_mode == 'full') {
+        $color_option['thumbnail']['title'] = array(
+          '#prefix' => '<span class="trade-product-color-picker-option-thumb-title">',
+          '#suffix' => '</span>',
+          'inner' => array('#markup' => $option->trade_product_option_entity->name),
+        );
+      }
+      elseif (!isset($option->trade_product_option_entity->field_color_image[LANGUAGE_NONE][0]) && isset($option->trade_product_option_entity->tid)) {
+        $color_option['thumbnail']['title'] = array(
+          '#prefix' => '<span class="trade-product-color-picker-option-thumb-title">',
+          '#suffix' => '</span>',
+          'inner' => array('#markup' => $option->trade_product_option_entity->tid),
+        );
+      }
+
+      $color_option['preview'] = array(
+        '#prefix' => '<span class="trade-product-color-picker-option-preview trade-tooltip-content element-invisible">',
+        '#suffix' => '</span>',
+        'wr' => array(
+          '#prefix' => '<span class="trade-product-color-picker-option-preview-wr">',
+          '#suffix' => '</span>',
+        )
+      );
+
+      if (isset($option->trade_product_option_entity->field_color_image[LANGUAGE_NONE][0])) {
+        $color_option['preview']['wr']['image'] = array(
+          '#prefix' => '<span class="trade-product-color-picker-option-preview-wr-image">',
+          '#suffix' => '</span>',
+          'image_formatter' => array(
+            '#theme' => 'image_formatter',
+            '#image_style' => TRADE_PRODUCT_COLOR_PICKER_PREVIEW_IS,
+            '#item' => $option->trade_product_option_entity->field_color_image[LANGUAGE_NONE][0],
+          )
+        );
+        $color_option['preview']['wr']['image']['image_formatter']['#item']['attributes']['class'][] = 'trade-img-data-src';
+      }
+      $currency = _trade_get_currency(variable_get('trade_currency', 'RUB'));
+
+      if (strpos($option->price, '-') === 0) {
+        $sign = '-';
+        $option_price = substr($option->price, 1);
+      }
+      else {
+        $sign = '+';
+        $option_price = $option->price;
+      }
+
+      $color_option['preview']['wr']['text'] = array(
+        '#prefix' => '<span class="trade-product-color-picker-option-preview-wr-text">',
+        '#suffix' => '</span>',
+        'content' => array(
+          '#markup' => '<span class="trade-name-wr">' . $option->trade_product_option_entity->name . '</span>'
+            . (!empty($option->price) ? (' ' . $sign . '<span class="trade-price-wr">' . _trade_format_number($option_price) . '</span><span class="trade-currency-wr">' . $currency[1] . '</span>') : '')
+        ),
+      );
+      $color_options[$tid] = drupal_render($color_option);
+    }
+  }
+
+  if (!empty($options['field_name'])) {
+
+    //option default
+    $form[$options['field_name']] = array(
+      '#type' => 'radios',
+      '#required' => TRUE,
+      '#default_value' => $option_default_value,
+      '#attributes' => array(
+        'class' => array(
+          str_replace('_', '-', $options['field_name']),
+        ),
+        'data-relation' => 'master',
+        'data-nid' => $options['nid'],
+        'data-field' => $options['field_name'],
+      ),
+      '#options' => $color_options,
+    );
+
+  }
+  return $form;
+}
+
+function _trade_product_field_form_element($node = NULL, $field_name = '', $option_fields = NULL, $options = array(), $custom_bfe_options = array(), $is_upholstery_field = FALSE, $view_mode = 'full') {
+  $field_instance = field_info_instance('node', $field_name, $node->type);
+  $form = array();
+  $currency_abbr = variable_get('trade_currency', 'RUB');
+  $currency = _trade_get_currency($currency_abbr);
+  $text_price_search = array(
+    '&nbsp;'
+  );
+  $text_price_replace = array(
+    ' '
+  );
+
+  if (!empty($option_fields) || !empty($options)) {
+    if (empty($options) && empty($custom_bfe_options)) {
+
+      //option default
+      $option_default_value = 0;
+
+      foreach ($option_fields as $option_field_key => $option_field) {
+        //option default
+        if (!empty($option_field->is_default)) {
+          $option_default_value = $option_field_key;
+        }
+
+        if (!empty($option_field->trade_product_option_entity)) {
+          if (!empty($option_field->trade_product_option_entity->name)) {
+            $options[$option_field_key] = $option_field->trade_product_option_entity->name;
+
+            if (!empty($option_field->price)) {
+              $custom_bfe_options[$option_field_key]['#attributes']['data-price'] = $option_field->price;
+              $custom_bfe_options[$option_field_key]['#attributes']['data-price-view'] = _trade_format_number($option_field->price);
+            }
+          }
+        }
+      }
+
+    }
+
+    $options = array('_none' => t('-Any-')) + $options;
+
+    $separator_triad = _trade_currency_separator();
+    $js_data = array('trade' => array('currencySeparator' => $separator_triad));
+
+    //option default
+    $form[$field_name] = array(
+      '#type' => 'select',
+      '#title' => $field_instance['label'],
+      '#required' => TRUE,
+      '#default_value' => $option_default_value,
+      '#options' => $options,
+      '#attributes' => array(
+        'class' => array(
+          'trade-product-option-form-item',
+          str_replace('_', '-', $field_name),
+        ),
+        'data-nid' => $node->nid,
+        'data-relation' => 'slave',
+        'data-field' => $field_name,
+      ),
+      '#attached' => array(
+        'js' => array(
+          array('data' => $js_data, 'type' => 'setting'),
+          drupal_get_path('module', 'trade') . '/js/trade_add_to_order.js',
+        )
+      )
+    );
+
+    if (!empty($custom_bfe_options)) {
+      $form[$field_name]['#custom_bfe'] = array(
+        '#options' => $custom_bfe_options
+      );
+    }
+
+    // add data-upholstery
+    if ($is_upholstery_field) {
+      $form[$field_name]['#attributes']['data-ptype'] = 'upholstery';
+    }
+  }
+  return $form;
+}
+
+function trade_product_add_to_order_form_submit($form, &$form_state) {
+  global $language;
+
+  $values = array_filter($form_state['values']);
+  if (!empty($values['trade_product_nid']) && !empty($values['trade_product_add_to_order_quantity'])) {
+
+    $order_id = _trade_get_current_order_id();
+
+    if (!empty($order_id)) {
+      $result = _trade_order_add_order_line_item($order_id, $values);
+    }
+
+    if (!empty($result)) {
+      $message = t('Thank, product add to cart. !checkout', array('!checkout' => l(t('Checkout order'), 'trade/cart')));
+      drupal_set_message($message);
+      if (variable_get('trade_sales_process_after_add_product_goto_front', FALSE)) {
+        $form_state['redirect'] = '<front>';
+      }
+
+    }
+    else {
+      $message = t('Sorry, try again later.');
+      drupal_set_message($message);
+    }
+
+  }
+}
+
+function _trade_order_is_my($order = NULL) {
+  global $user;
+  return ($user->uid && $user->uid == $order->uid)
+  || (empty($user->uid) && !empty($_COOKIE['Drupal_trade_uid']) && $_COOKIE['Drupal_trade_uid'] == $order->trade_uid);
+}
+
+function _trade_get_trade_uid() {
+  global $user, $trade_uid;
+
+  if ($user->uid) {
+    $trade_uid = 0;
+  }
+  else {
+
+    // exists cookie trade uid
+    if (!empty($_COOKIE['Drupal_trade_uid'])) {
+      $trade_uid_temp = $_COOKIE['Drupal_trade_uid'];
+      $trade_uid_exists = db_query("SELECT COUNT(*) FROM {trade_order} WHERE trade_uid = :tu", array(':tu' => $trade_uid_temp))->fetchField();
+      if (!empty($trade_uid_exists)) {
+        $trade_uid = $trade_uid_temp;
+      }
+      else {
+        trade_cookie_delete('uid');
+      }
+
+    }
+
+    // create new trade uid
+    if (empty($trade_uid)) {
+      $currency = _trade_get_currency(variable_get('trade_currency', 'RUB'));
+      for ($i = 0; $i <= 10; $i++) {
+        $trade_uid_temp = drupal_hash_base64(uniqid(mt_rand(), TRUE));
+        $trade_uid_exists = db_query("SELECT COUNT(*) FROM {trade_order} WHERE trade_uid = :tu", array(':tu' => $trade_uid_temp))->fetchField();
+        if (empty($trade_uid_exists)) {
+          $trade_uid_ = $trade_uid_temp;
+          $time_iso = format_date(REQUEST_TIME, 'custom', 'c');
+
+          $fields = array(
+            'trade_uid' => $trade_uid_,
+            'created' => $time_iso,
+            'changed' => $time_iso,
+            'currency' => $currency[0],
+          );
+
+          db_insert('trade_order')->fields($fields)->execute();
+          $values = array('uid' => $trade_uid_);
+          $trade_uid = $trade_uid_;
+          trade_cookie_save($values);
+
+          break;
+        }
+      }
+
+    }
+  }
+
+  return isset($trade_uid) ? $trade_uid : NULL;
+}
+
+/**
+ * Implements hook_forms().
+ *
+ */
+function trade_forms($form_id, $args) {
+
+  $forms = array();
+
+  if (strpos($form_id, 'trade_order_delete_form_') === 0) {
+    $forms[$form_id]['callback'] = 'trade_order_delete_form';
+  }
+  elseif (strpos($form_id, 'trade_order_quantity_form_') === 0) {
+    $forms[$form_id]['callback'] = 'trade_order_quantity_form';
+  }
+  elseif (strpos($form_id, 'trade_product_option_upholstery_picker_view_') === 0) {
+    $forms[$form_id]['callback'] = 'trade_product_option_upholstery_picker_view';
+  }
+  elseif (strpos($form_id, 'trade_product_add_to_order_form_') === 0) {
+
+    $forms[$form_id]['callback'] = 'trade_product_add_to_order_form';
+  }
+
+  return $forms;
+}
+
+function _trade_order_delete($order) {
+  $result = FALSE;
+
+  // delete lines & options
+  if (!empty($order->lines)) {
+    $order_line_ids = array_keys($order->lines);
+    db_delete('trade_order_line_option')->condition('order_line_id', $order_line_ids, 'IN')->execute();
+    db_delete('trade_order_line')->condition('order_line_id', $order_line_ids, 'IN')->execute();
+  }
+
+  // delete order
+  if (!empty($order->order_id)) {
+    db_delete('trade_order')->condition('order_id', $order->order_id)->execute();
+    $result = TRUE;
+  }
+  return $result;
+}
+
+function _trade_get_current_order_id() {
+  global $user, $trade_uid;
+
+  if (is_null($trade_uid)) {
+    $trade_uid = _trade_get_trade_uid();
+  }
+
+  if (isset($trade_uid)) {
+    $query = db_select('trade_order', 'tor')
+      ->fields('tor', array('order_id'))
+      ->condition('tor.uid', $user->uid)
+      ->condition('tor.trade_uid', $trade_uid)
+      ->condition('tor.status', 0);
+
+    $order_id = $query->execute()->fetchField();
+
+    if (empty($order_id)) {
+      $currency = _trade_get_currency(variable_get('trade_currency', 'RUB'));
+      $time_iso = format_date(REQUEST_TIME, 'custom', 'c');
+      $fields = array(
+        'uid' => $user->uid,
+        'trade_uid' => $trade_uid,
+        'created' => $time_iso,
+        'changed' => $time_iso,
+        'currency' => $currency[0],
+      );
+      drupal_write_record('trade_order', $fields);
+      $order_id = $query->execute()->fetchField();
+    }
+  }
+
+  return !empty($order_id) ? $order_id : 0;
+}
+
+function _trade_order_add_order_line_item($order_id = 0, $values = array()) {
+  global $user;
+  $result = FALSE;
+
+  $order_line_option_values = array();
+  $order_line_options = array();
+
+  foreach ($values as $key => &$value) {
+    $value = trim(filter_xss($value, array()));
+    if (strpos($key, 'field_') === 0 && !empty($value) && $value != '_none') {
+      $order_line_option_values[$key] = $value;
+    }
+  }
+
+  // product
+  if (!empty($values['trade_product_nid'])) {
+
+    $node_product = node_load($values['trade_product_nid']);
+    $form_options = _trade_product_add_to_order_form_build_product_option($node_product);
+
+    if (!empty($node_product->trade_product['price']['trade_product_price'])) {
+      $price = $node_product->trade_product['price']['trade_product_price'];
+    }
+    else {
+      $price = 0;
+    }
+
+    $price_option_sum = 0;
+    $price_option_upholstery = 0;
+
+    foreach ($order_line_option_values as $f_name => $f_data) {
+
+      // option
+      if (!empty($form_options[$f_name]['#options'][$f_data])) {
+
+        // order line option
+        $field_instance_info = field_info_instance('node', $f_name, $node_product->type);
+        $order_line_options[$f_name] = array(
+          'option_field' => $f_name,
+          'option_entity_id' => $f_data,
+          'option_title' => $form_options[$f_name]['#options'][$f_data]
+        );
+
+        // order line price
+        if (!empty($form_options[$f_name]['#custom_bfe']['#options'][$f_data]['#attributes']['data-price'])) {
+          $price_option_sum = $price_option_sum + $form_options[$f_name]['#custom_bfe']['#options'][$f_data]['#attributes']['data-price'];
+        }
+
+      }
+      elseif (!empty($form_options[$f_name]['#options'])) {
+
+        //upholstery option
+        $category = '';
+        $collection = '';
+
+        foreach ($form_options[$f_name]['#options'] as $cat_key => $collections) {
+          if (is_array($collections)) {
+            foreach ($collections as $coll_key => $materials) {
+              if (is_array($materials)) {
+                foreach ($materials as $m_nid => $m_title) {
+                  if ($f_data == $m_nid) {
+                    $category = $cat_key;
+                    $collection = $coll_key;
+                    $field_instance_info = field_info_instance('node', $f_name, $node_product->type);
+
+                    //order line option
+                    $order_line_options[$f_name] = array(
+                      'option_field' => $f_name,
+                      'option_entity_id' => $f_data,
+                      'option_title' => $m_title
+                    );
+
+                    // order line price
+                    if (!empty($form_options[$f_name]['#custom_bfe']['#options']["{$category}_{$collection}_{$f_data}"]['#attributes']['data-price'])) {
+                      if ($form_options[$f_name]['#custom_bfe']['#options']["{$category}_{$collection}_{$f_data}"]['#attributes']['data-price'] > $price_option_upholstery) {
+                        $price_option_upholstery = $form_options[$f_name]['#custom_bfe']['#options']["{$category}_{$collection}_{$f_data}"]['#attributes']['data-price'];
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+      }
+    }
+
+    //calc price with options
+    if ($price_option_upholstery > $price) {
+      $price = $price_option_upholstery;
+    }
+    $price += $price_option_sum;
+
+    if (!empty($node_product)) {
+      $quantity = !empty($values['trade_product_add_to_order_quantity']) ? $values['trade_product_add_to_order_quantity'] : 0;
+      $amount = $price * $quantity;
+
+      $order_line_id_exists_keys = array(
+        'order_id' => $order_id,
+        'type' => 'product',
+        'order_entity_id' => $node_product->nid,
+      );
+
+      $exists_order_line_query = db_select('trade_order_line', 'tol')->fields('tol');
+      foreach ($order_line_id_exists_keys as $order_line_id_exists_key => $order_line_id_exists_value) {
+        $exists_order_line_query->condition('tol.' . $order_line_id_exists_key, $order_line_id_exists_value);
+      }
+
+      $exists_order_lines = $exists_order_line_query->execute()->fetchAll();
+
+      if (!empty($exists_order_lines)) {
+
+        foreach ($exists_order_lines as $line_key => $exists_order_line) {
+
+          // get exists options
+          $exists_order_line_options_query = db_select('trade_order_line_option', 'tolo')->fields('tolo')
+            ->condition('tolo.order_line_id', $exists_order_line->order_line_id);
+          $exists_order_line_options = $exists_order_line_options_query->execute()->fetchAll();
+
+          if (!empty($exists_order_line_options) && !empty($order_line_options)) {
+            // need check
+            if (count($exists_order_line_options) == count($order_line_options)) {
+              $options_equal = TRUE;
+
+              // check is equal all options ?
+              foreach ($exists_order_line_options as $exists_order_line_option) {
+                if (!empty($order_line_options[$exists_order_line_option->option_field])) {
+                  if ($order_line_options[$exists_order_line_option->option_field]['option_entity_id'] != $exists_order_line_option->option_entity_id) {
+                    $options_equal = FALSE;
+                    break;
+                  }
+                }
+                else {
+                  $options_equal = FALSE;
+                  break;
+                }
+              }
+            }
+            else {
+              $options_equal = FALSE;
+            }
+          }
+          elseif (empty($exists_order_line_options) && empty($order_line_options)) {
+            $options_equal = TRUE;
+          }
+          else {
+            $options_equal = FALSE;
+          }
+
+          if ($options_equal) {
+            break;
+          }
+
+        }
+      }
+
+      // change exists order line
+      if (!empty($exists_order_line->order_line_id) && !empty($options_equal)) {
+        $quantity += $exists_order_line->quantity;
+        $amount = $quantity * $price;
+        // rewrite order line
+        $order_line = array(
+          'order_line_id' => $exists_order_line->order_line_id,
+          'order_id' => $order_id,
+          'type' => 'product',
+          'order_entity_id' => $node_product->nid,
+          'title' => $node_product->title,
+          'price' => $price,
+          'quantity' => $quantity,
+          'amount' => $amount,
+          'data' => '',
+        );
+
+        if (drupal_write_record('trade_order_line', $order_line, 'order_line_id') == SAVED_UPDATED) {
+          $result = TRUE;
+        }
+      }
+      else {
+
+        // add new order line
+        $order_line = array(
+          'order_id' => $order_id,
+          'type' => 'product',
+          'order_entity_id' => $node_product->nid,
+          'title' => $node_product->title,
+          'price' => $price,
+          'quantity' => $quantity,
+          'amount' => $amount,
+          'data' => '',
+        );
+        drupal_write_record('trade_order_line', $order_line);
+
+        if (!empty($order_line['order_line_id'])) {
+          $result = TRUE;
+
+          // add order line option
+          if (!empty($order_line_options)) {
+            foreach ($order_line_options as &$order_line_option) {
+              $order_line_option['order_line_id'] = $order_line['order_line_id'];
+              drupal_write_record('trade_order_line_option', $order_line_option);
+            }
+          }
+
+        }
+      }
+    }
+  }
+
+  // calc and update order amount & quantity
+  if (!empty($result)) {
+
+    // rewrite service
+    _trade_order_rewrite_services($order_id);
+
+    // rewrite quntity & amount
+    _trade_order_rewrite_quantity_and_amount($order_id);
+  }
+  return $result;
+}
+
+function _trade_get_products_services($order = NULL) {
+  $services = array();
+  $order_product_nodes = array();
+
+  if (!empty($order->lines)) {
+    foreach ($order->lines as $line) {
+      $product_node = node_load($line->order_entity_id);
+
+      if ($product_node && !empty($product_node->trade_product['service'])) {
+
+        foreach ($product_node->trade_product['service'] as $service_name => $service) {
+
+          switch ($service_name) {
+            case 'trade_shipping':
+              if (isset($service['fix_amount']['amount']) && $service['fix_amount']['amount'] !== '') {
+                if (isset($services['shipping']['fix_amount']['amount'])) {
+                  if ($service['fix_amount']['amount'] > $services['shipping']['fix_amount']['amount']) {
+                    $services['shipping']['fix_amount']['amount'] = $service['fix_amount']['amount'];
+                  }
+                }
+                else {
+                  $services['shipping']['fix_amount']['amount'] = $service['fix_amount']['amount'];
+                }
+              }
+              if (isset($service['price_on_distance']['price']) && $service['price_on_distance']['price'] !== '') {
+                if (isset($services['shipping']['price_on_distance']['price'])) {
+                  if ($service['price_on_distance']['price'] > $services['shipping']['price_on_distance']['price']) {
+                    $services['shipping']['price_on_distance']['price'] = $service['price_on_distance']['price'];
+                  }
+                }
+                else {
+                  $services['shipping']['price_on_distance']['price'] = $service['price_on_distance']['price'];
+                }
+              }
+
+              //custom shipping
+              if (db_table_exists('trade_shipping')) {
+                $custom_shipping_objs = trade_shipping_load_multiply();
+
+                foreach ($custom_shipping_objs as $custom_shipping_key => $custom_shipping_obj) {
+                  $element_key = 'custom_' . $custom_shipping_obj->sid;
+                  if (isset($service[$element_key]['amount']) && $service[$element_key]['amount'] !== '') {
+                    if (isset($services['shipping'][$element_key]['amount'])) {
+                      if ($service[$element_key]['amount'] > $services['shipping'][$element_key]['amount']) {
+                        $services['shipping'][$element_key]['amount'] = $service[$element_key]['amount'];
+                      }
+                    }
+                    else {
+                      $services['shipping'][$element_key]['amount'] = $service[$element_key]['amount'];
+                    }
+                  }
+                }
+              }
+
+              break;
+
+            case 'trade_lifting':
+
+              // lift
+              if (isset($service['lift']['type'])) {
+                // amount
+                if ($service['lift']['type'] == 'amount') {
+                  if (!empty($service['lift']['amount'])) {
+                    if (isset($services['lifting']['lift']['amount'])) {
+                      $services['lifting']['lift']['amount'] += $service['lift']['amount'];
+                    }
+                    else {
+                      $services['lifting']['lift']['amount'] = $service['lift']['amount'];
+                    }
+                  }
+                }
+                elseif ($service['lift']['type'] == 'percent_on_amount') {
+                  // percent on amount
+                  $line_amount = !empty($line->amount) ? $line->amount : 0;
+                  // 3% on amount
+                  $amount = round($line_amount * 0.03);
+                  // not less 200
+                  if ($amount < 200) {
+                    $amount = 200;
+                  }
+                  if (isset($services['lifting']['lift']['amount'])) {
+                    $services['lifting']['lift']['amount'] += $amount;
+                  }
+                  else {
+                    $services['lifting']['lift']['amount'] = $amount;
+                  }
+                }
+              }
+
+              // steps
+              if (isset($service['steps']['type'])) {
+                // amount
+                if ($service['steps']['type'] == 'price') {
+                  if (!empty($service['steps']['price'])) {
+                    if (isset($services['lifting']['steps']['price'])) {
+                      $services['lifting']['steps']['price'] += $service['steps']['price'];
+                    }
+                    else {
+                      $services['lifting']['steps']['price'] = $service['steps']['price'];
+                    }
+                  }
+                }
+                elseif ($service['steps']['type'] == 'percent_on_amount') {
+
+                  // percent on amount
+                  $line_amount = !empty($line->amount) ? $line->amount : 0;
+
+                  // 3% on amount
+                  $amount = round($line_amount * 0.03);
+
+                  // not less 250
+                  if ($amount < 250) {
+                    $amount = 250;
+                  }
+                  if (isset($services['lifting']['steps']['price'])) {
+                    $services['lifting']['steps']['price'] += $amount;
+                  }
+                  else {
+                    $services['lifting']['steps']['price'] = $amount;
+                  }
+                }
+              }
+              break;
+
+            case 'trade_assembly':
+
+              // lift
+              if (isset($service['assembly']['type'])) {
+
+                // amount
+                if ($service['assembly']['type'] == 'amount') {
+                  if (!empty($service['assembly']['amount'])) {
+                    if (isset($services['assembly']['assembly']['amount'])) {
+                      $services['assembly']['assembly']['amount'] += $service['assembly']['amount'];
+                    }
+                    else {
+                      $services['assembly']['assembly']['amount'] = $service['assembly']['amount'];
+                    }
+                  }
+                }
+                elseif ($service['assembly']['type'] == 'percent_on_amount_15') {
+
+                  // percent on amount
+                  $line_amount = !empty($line->amount) ? $line->amount : 0;
+
+                  // 15% on amount
+                  $amount = round($line_amount * 0.15);
+
+                  // not less 500
+                  if ($amount < 500) {
+                    $amount = 500;
+                  }
+                  if (isset($services['assembly']['assembly']['amount'])) {
+                    $services['assembly']['assembly']['amount'] += $amount;
+                  }
+                  else {
+                    $services['assembly']['assembly']['amount'] = $amount;
+                  }
+                }
+                elseif ($service['assembly']['type'] == 'percent_on_amount_10') {
+
+                  // percent on amount
+                  $line_amount = !empty($line->amount) ? $line->amount : 0;
+
+                  // 10% on amount
+                  $amount = round($line_amount * 0.10);
+
+                  // not less 700
+                  if ($amount < 700) {
+                    $amount = 700;
+                  }
+
+                  if (isset($services['assembly']['assembly']['amount'])) {
+                    $services['assembly']['assembly']['amount'] += $amount;
+                  }
+                  else {
+                    $services['assembly']['assembly']['amount'] = $amount;
+                  }
+
+                }
+              }
+              break;
+
+          }
+
+
+        }
+
+      }
+    }
+  }
+
+  return $services;
+}
+
+function _trade_order_service_update_values($product_services = array(), $order_service = array(), $service_update_values = array()) {
+
+  $new_order_service = array();
+
+  //set values
+  $service_name = key($service_update_values);
+  if (isset($order_service[$service_name])) {
+    $order_service[$service_name] = array_merge($order_service[$service_name], $service_update_values[$service_name]);
+  }
+  else {
+    $order_service = array_merge($order_service, $service_update_values);
+  }
+
+  $order_custom_field = array(
+    'distance',
+    'type',
+    'floor',
+  );
+
+  // update values
+  foreach ($order_service as $service_name => $service_fields) {
+    if (!empty($service_fields['type'])) {
+      $type = $service_fields['type'];
+    }
+    else {
+      $type = '';
+    }
+    if (!empty($product_services[$service_name][$type])) {
+      $custom_values = array_intersect_key($order_service[$service_name], array_combine($order_custom_field, $order_custom_field));
+      $new_order_service[$service_name] = array_merge($product_services[$service_name][$type], $custom_values);
+
+      // calc amount if need
+      if (isset($new_order_service[$service_name]['price']) && isset($new_order_service[$service_name]['distance'])) {
+        // distance
+        $new_order_service[$service_name]['amount'] = $new_order_service[$service_name]['price'] * $new_order_service[$service_name]['distance'];
+      }
+      elseif (isset($new_order_service[$service_name]['price']) && isset($new_order_service[$service_name]['floor'])) {
+        // floor
+        $new_order_service[$service_name]['amount'] = $new_order_service[$service_name]['price'] * $new_order_service[$service_name]['floor'];
+      }
+    }
+  }
+
+  return $new_order_service;
+}
+
+/*
+ *   Rewrite order service
+ */
+function _trade_order_rewrite_services($order = NULL) {
+  $result = FALSE;
+
+  if (!is_null($order)) {
+    if (!empty($order) && is_numeric($order)) {
+      $order = trade_order_load($order);
+    }
+    else {
+      $order = trade_order_load($order->order_id);
+    }
+
+    $product_services = _trade_get_products_services($order);
+    if (!empty($order->service)) {
+      $order_service = unserialize($order->service);
+    }
+    else {
+      $order_service = array();
+    }
+    $order_service = _trade_order_service_update_values($product_services, $order_service);
+    $fields = array(
+      'order_id' => $order->order_id,
+      'service' => $order_service,
+      'changed' => format_date(REQUEST_TIME, 'custom', 'c'),
+    );
+
+    // SAVED_UPDATED
+    $result = drupal_write_record('trade_order', $fields, 'order_id');
+  }
+  return $result;
+}
+
+function _trade_order_rewrite_quantity_and_amount($order_id = 0, &$order = NULL) {
+  $order = trade_order_load($order_id);
+
+  if (!empty($order)) {
+    $fields = array(
+      'order_id' => $order_id,
+      'product_count' => 0,
+      'amount' => 0,
+    );
+
+    // lines
+    if (!empty($order->lines)) {
+      foreach ($order->lines as $line_id => $order_line) {
+        $fields['product_count'] += $order_line->quantity;
+        $fields['amount'] += $order_line->amount;
+      }
+    }
+    else {
+      $order->service = serialize(array());
+      $fields['service'] = array();
+    }
+
+    // services
+    if (!empty($order->service)) {
+      $service = unserialize($order->service);
+
+      foreach ($service as $service_name => $service_field) {
+        if (!empty($service_field['amount'])) {
+          $fields['amount'] += $service_field['amount'];
+        }
+      }
+
+    }
+    $fields['changed'] = format_date(REQUEST_TIME, 'custom', 'c');
+
+    // SAVED_UPDATED
+    $result = drupal_write_record('trade_order', $fields, 'order_id');
+    $order = (object) $fields;
+  }
+
+  return !empty($result) ? $result : FALSE;
+}
+
+
+function trade_category_collection_load($cat_col_arg = '') {
+  $category_collection = FALSE;
+
+  $args = explode('_', $cat_col_arg);
+
+  if (!empty($args)) {
+    if ($args[0] == 'category' && is_numeric($args[1])) {
+      $cat = taxonomy_term_load($args[1]);
+    }
+    if ($args[2] == 'collection' && is_numeric($args[3])) {
+      $col = taxonomy_term_load($args[3]);
+    }
+  }
+
+  if (_trade_is_fabricator_term($cat) && _trade_is_fabricator_term($col)) {
+    $category_collection = new stdClass();
+    $category_collection->category = $cat;
+    $category_collection->collection = $col;
+  }
+
+  return $category_collection;
+}
+
+function trade_order_load($order_id = 0) {
+  $order = FALSE;
+
+  $order = db_select('trade_order', 'tor')->fields('tor')->condition('tor.order_id', $order_id)->execute()
+    ->fetchObject();
+
+  if (!empty($order->order_id)) {
+    $query_order_line = db_select('trade_order_line', 'tol')->fields('tol')
+      ->condition('tol.order_id', $order->order_id);
+    $query_order_line->leftJoin('trade_order_line_option', 'top', 'top.order_line_id = tol.order_line_id');
+
+    $query_order_line->addField('top', 'order_line_option_id');
+    $query_order_line->addField('top', 'option_field');
+    $query_order_line->addField('top', 'option_entity_id');
+    $query_order_line->addField('top', 'option_title');
+
+    $order_lines = $query_order_line->execute()->fetchAll();
+    if (!empty($order_lines)) {
+      foreach ($order_lines as $order_line) {
+
+        // create line
+        if (empty($order->lines[$order_line->order_line_id])) {
+          $order->lines[$order_line->order_line_id] = $order_line;
+        }
+        // add option
+        if (!empty($order_line->order_line_option_id)) {
+          $option = array(
+            'option_field' => $order_line->option_field,
+            'option_entity_id' => $order_line->option_entity_id,
+            'option_title' => $order_line->option_title
+          );
+          $order->lines[$order_line->order_line_id]->options[$order_line->order_line_option_id] = $option;
+        }
+      }
+    }
+  }
+
+  return $order;
+}
+
+function _trade_product_add_to_order_form_build_product_option($node = NULL, $view_mode = 'full') {
+
+  $form = array();
+
+  if (!empty($node->trade_product['option_price'])) {
+    foreach ($node->trade_product['option_price'] as $field_name => $option_field) {
+
+      // get upholstery option fields
+      $upholstery_option_fields = array_filter(variable_get('trade_product_node_types_upholstery_options_' . $node->type, array()));
+
+      // get option fields
+      $option_fields = array_filter(variable_get('trade_product_node_types_options_' . $node->type, array()));
+
+      if (isset($option_fields[$field_name]) && !isset($upholstery_option_fields[$field_name])) {
+        //classic option
+        // $node = NULL, $field_name = '', $option_fields = NULL, $options = array(), $custom_bfe_options = array(), $is_upholstery_field = FALSE, $view_mode = '
+        $form += _trade_product_field_form_element($node, $field_name, $option_field, array(), array(), FALSE, $view_mode);
+      }
+      else {
+
+        //upholstery
+        foreach ($upholstery_option_fields as $upholstery_field_name) {
+          // get entity type
+          $material_bundle = _trade_get_material_bundle($upholstery_field_name);
+          if ($material_bundle) {
+            // get collection field
+            $collection_field = variable_get('trade_product_upholstery_collection_field', 'field_material_upholster_collect');
+            if (!empty($collection_field)) {
+              $material_entities_item_list_items_data = _trade_product_get_material_entity($collection_field, $material_bundle, $option_field);
+
+              if (!empty($material_entities_item_list_items_data)) {
+                $upholstery_options = array();
+                $upholstery_custom_bfe_options = array();
+
+                foreach ($material_entities_item_list_items_data as $cat_tid => $cat_data) {
+                  if (!empty($cat_data['children'])) {
+                    foreach ($cat_data['children'] as $coll_tid => $coll_data) {
+                      if (!empty($coll_data['children'])) {
+                        foreach ($coll_data['children'] as $key => $data) {
+                          $upholstery_options[$cat_data['data']]["&nbsp;" . $coll_data['data']][$key] = $data['entity_title'];
+                          if (!empty($data['price'])) {
+                            $upholstery_custom_bfe_options["{$cat_data['data']}_&nbsp;{$coll_data['data']}_{$key}"]['#attributes']['data-price'] = $data['price'];
+                            $upholstery_custom_bfe_options["{$cat_data['data']}_&nbsp;{$coll_data['data']}_{$key}"]['#attributes']['data-price-view'] = _trade_format_number($data['price']);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+
+                if (!empty($upholstery_options)) {
+                  $form += _trade_product_field_form_element($node, $upholstery_field_name, array(), $upholstery_options, $upholstery_custom_bfe_options, TRUE, $view_mode);
+                }
+              }
+            }
+          }
+
+        }
+
+      }
+    }
+  }
+
+  return $form;
+}
+
+function trade_product_add_to_order_form($form, &$form_state, $node = NULL, $view_mode = '') {
+  $debug_mode = variable_get('trade_debug_mode', FALSE);
+  if ($debug_mode) {
+    drupal_add_js(array('trade' => array('debugMode' => $debug_mode)), 'setting');
+  }
+  $m_path = drupal_get_path('module', 'trade');
+
+  $separator_triad = _trade_currency_separator();
+  $js_data = array('trade' => array('currencySeparator' => $separator_triad));
+  $form['#attributes']['class'][] = 'trade-product-add-to-order';
+  $form['#attached']['js'] = array(
+    array(
+      'data' => $js_data,
+      'type' => 'setting',
+    ),
+    $m_path . '/js/trade_add_to_order.js'
+  );
+  $form['#attributes']['data-nid'] = $node->nid;
+
+  $form['trade_product_nid'] = array(
+    '#type' => 'hidden',
+    '#value' => $node->nid,
+  );
+
+  $form['trade_product_add_to_order_quantity'] = array(
+    '#type' => 'textfield',
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#default_value' => 1,
+    '#weight' => 10,
+    '#attributes' => array('class' => array('trade-spinner')),
+    '#attached' => array(
+      'css' => array(drupal_get_path('module', 'trade') . '/css/trade_spinner.css'),
+      'js' => array(drupal_get_path('module', 'trade') . '/js/trade_spinner.js'),
+    ),
+  );
+
+  // add product option
+  $form += _trade_product_add_to_order_form_build_product_option($node, $view_mode);
+
+  $form['actions'] = array(
+    '#type' => 'actions',
+    '#attributes' => array('class' => array('trade-product-add-to-order-actions')),
+    '#weight' => 9,
+  );
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#attributes' => array('class' => array('trade-product-add-to-order-buy')),
+    '#value' => t('Buy'),
+  );
+  return $form;
+}
+
+function trade_product_add_to_order_form_validate($form, &$form_state) {
+  if (!empty($form_state['values']['trade_product_nid'])) {
+    $product_node = node_load($form_state['values']['trade_product_nid']);
+  }
+  if (!empty($product_node->type)) {
+    $trade_product_option_fields = array_filter(variable_get('trade_product_node_types_options_' . $product_node->type, array()));
+    $trade_product_option_values = array_intersect_key($form_state['values'], $trade_product_option_fields);
+    if (!empty($trade_product_option_values)) {
+      foreach ($trade_product_option_values as $option_key => $option_value) {
+        if (empty($option_value) || $option_value == '_none') {
+          form_set_error($option_key, t('Please select @option_title', array('@option_title' => drupal_strtolower($form[$option_key]['#title']))));
+        }
+      }
+    }
+  }
+}
+
+function _trade_product_get_material_entity($collection_field = '', $material_bundle = '', $option_field = array(), $category = NULL, $collection = NULL) {
+  $material_entities = array();
+
+  $collection_table = "field_data_{$collection_field}";
+
+  if (db_table_exists($collection_table)) {
+    $collection_table;
+    $collection_tid = "{$collection_field}_tid";
+    $query = db_select($collection_table, $collection_table)
+      ->fields($collection_table)
+      ->condition("{$collection_table}.bundle", $material_bundle);
+    $query->innerJoin('node', 'n', "n.nid = {$collection_table}.entity_id AND status = 1");
+    $query->addField('n', 'title', 'entity_title');
+
+    // join with collection term
+    $query->innerJoin('taxonomy_term_data', 'ttd', "ttd.tid = {$collection_table}.{$collection_tid} ");
+
+    $query->addField('ttd', 'tid', 'collection_tid');
+    $query->addField('ttd', 'weight', 'collection_weight');
+    $query->addField('ttd', 'name', 'collection_name');
+
+    // join with upholster category term
+    $query->innerJoin('taxonomy_term_hierarchy', 'tth', "tth.tid = ttd.tid");
+    $query->condition('tth.parent', array_keys($option_field), 'IN');
+
+    $query->innerJoin('taxonomy_term_data', 'ttdc', "ttdc.tid = tth.parent");
+    $query->addField('ttdc', 'tid', 'category_tid');
+    $query->addField('ttdc', 'weight', 'category_weight');
+    $query->addField('ttdc', 'name', 'category_name');
+
+    $query->orderBy('category_weight', 'ASC');
+    $query->orderBy('category_name', 'ASC');
+
+    $query->orderBy('collection_weight', 'ASC');
+    $query->orderBy('collection_name', 'ASC');
+    $query->orderBy('n.created', 'ASC');
+
+    $query->addTag('node_access');
+
+
+    $rows = $query->execute()->fetchAll();
+
+
+    if (!empty($rows)) {
+      $currency = _trade_get_currency(variable_get('trade_currency', 'RUB'));
+      foreach ($rows as $row) {
+
+
+        if ((empty($category) && empty($collection))
+          ||
+          ($row->category_tid == $category->tid && $row->collection_tid == $collection->tid)
+        ) {
+
+
+          // upholstery category
+          if (empty($material_entities[$row->category_tid]['data'])) {
+
+            $material_entities[$row->category_tid]['data'] = $row->category_name . (!empty($option_field[$row->category_tid]->price) ? " "
+                . _trade_format_number($option_field[$row->category_tid]->price) . " {$currency[1]}" : '');
+          }
+
+          // collection
+          if (empty($material_entities[$row->category_tid]['children'][$row->collection_tid])) {
+            $material_entities[$row->category_tid]['children'][$row->collection_tid]['data'] = $row->collection_name;
+          }
+
+          // materials
+          $material_entities[$row->category_tid]['children'][$row->collection_tid]['children'][$row->entity_id] = array(
+            'entity_title' => $row->entity_title,
+            'price' => (!empty($option_field[$row->category_tid]->price) ? $option_field[$row->category_tid]->price : ''),
+          );
+
+        }
+
+
+      }
+    }
+
+  }
+  return $material_entities;
+}
+
+function _trade_get_currencies($mode = 'all') {
+
+  $currencies_default = 'RUB|руб.|&#8381;' . "\n" . 'EUR|евро|&#8364;';
+
+  if ($mode == 'default') {
+    return $currencies_default;
+  }
+  else {
+    $currencies = variable_get('trade_currencies', $currencies_default);
+    $currencies_arr = explode("\n", $currencies);
+
+    // RUB no killed!
+    if (!count($currencies_arr)) {
+      $currencies_arr[] = 'RUB|руб.|&#8381;';
+    }
+    elseif (!in_array('RUB|руб.|&#8381;', $currencies_arr, TRUE)) {
+      $currencies_arr[] = 'RUB|руб.|&#8381;';
+    }
+
+    foreach ($currencies_arr as $currency_str) {
+      $currency_arr = explode('|', $currency_str);
+      if (count($currency_arr) == 3) {
+        $currencies_opts[$currency_arr[0]] = $currency_str;
+      }
+    }
+    return $currencies_opts;
+  }
+}
+
+function _trade_get_currency($abbr = 'RUB') {
+  $currency = array();
+  $currencies_opts = _trade_get_currencies();
+  if (isset($currencies_opts[$abbr])) {
+    $currency = explode('|', $currencies_opts[$abbr]);
+  }
+  return $currency;
+}
+
+/**
+ * Implements hook_library().
+ *
+ */
+function trade_library() {
+
+  $libraries['jquery_ui_spinner'] = array(
+    'title' => 'jQuery Spinner',
+    'website' => 'http://github.com/btburnett3/jquery.ui.spinner/',
+    'version' => '1.8',
+    'js' => array(
+      libraries_get_path('jquery_ui_spinner') . '/ui.spinner.min.js' => array(),
+    ),
+    'css' => array(
+      libraries_get_path('jquery_ui_spinner') . '/ui.spinner.css' => array(),
+    ),
+    'dependencies' => array(
+      array('system', 'ui.widget'),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function trade_field_formatter_info() {
+  return array(
+    'trade_list_boolean' => array(
+      'label' => t('Checked'),
+      'field types' => array('list_boolean'),
+    ),
+    'trade_text_plain_as_link' => array(
+      'label' => t('Plain text as link content'),
+      'field types' => array('text'),
+    ),
+    'trade_option_picker' => array(
+      'label' => t('Trade option picker'),
+      'field types' => array('taxonomy_term_reference'),
+    ),
+    'trade_first_image' => array(
+      'label' => t('Image first (trade)'),
+      'field types' => array('image'),
+      'settings' => array('image_style' => '', 'image_link' => ''),
+    ),
+    'trade_product_gallery_image' => array(
+      'label' => t('Product gallery (trade)'),
+      'field types' => array('image'),
+      'settings' => array('image_preview_is' => '', 'image_thumb_is' => '', 'image_nav_view_count' => ''),
+    ),
+    'trade_entityreference_entity_view' => array(
+      'label' => t('Rendered entity (trade)'),
+      'description' => t('Display the referenced entities rendered by entity_view() and masonry.'),
+      'field types' => array('entityreference'),
+      'settings' => array(
+        'view_mode' => 'default',
+        'links' => TRUE,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_settings_form().
+ */
+function trade_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $element = array();
+
+  switch ($display['type']) {
+
+    // trade_product_gallery_image
+    case 'trade_product_gallery_image':
+      $image_styles = image_style_options(FALSE, PASS_THROUGH);
+      $settings = array_merge(array(
+        'image_preview_is' => TRADE_PRODUCT_PREVIEW_IS,
+        'image_thumb_is' => TRADE_PRODUCT_THUMB_IS,
+        'image_nav_view_count' => TRADE_PRODUCT_GALLERY_NAV_COUNT,
+      ), array_filter($settings));
+      $element['image_preview_is'] = array(
+        '#title' => t('Image preview style'),
+        '#type' => 'select',
+        '#default_value' => $settings['image_preview_is'],
+        '#options' => $image_styles,
+      );
+      $element['image_thumb_is'] = array(
+        '#title' => t('Image thumbnail style'),
+        '#type' => 'select',
+        '#default_value' => $settings['image_thumb_is'],
+        '#options' => $image_styles,
+      );
+      $element['image_nav_view_count'] = array(
+        '#title' => t('Link image to'),
+        '#type' => 'select',
+        '#default_value' => $settings['image_nav_view_count'],
+        '#options' => drupal_map_assoc(range(1, 10)),
+      );
+      break;
+
+    case 'trade_first_image':
+      $image_styles = image_style_options(FALSE, PASS_THROUGH);
+      $element['image_style'] = array(
+        '#title' => t('Image style'),
+        '#type' => 'select',
+        '#default_value' => $settings['image_style'],
+        '#empty_option' => t('None (original image)'),
+        '#options' => $image_styles,
+      );
+
+      $link_types = array(
+        'content' => t('Content'),
+        'file' => t('File'),
+      );
+      $element['image_link'] = array(
+        '#title' => t('Link image to'),
+        '#type' => 'select',
+        '#default_value' => $settings['image_link'],
+        '#empty_option' => t('Nothing'),
+        '#options' => $link_types,
+      );
+      break;
+
+    case 'trade_entityreference_entity_view':
+      $entity_info = entity_get_info($field['settings']['target_type']);
+      $options = array('default' => t('Default'));
+      if (!empty($entity_info['view modes'])) {
+        foreach ($entity_info['view modes'] as $view_mode => $view_mode_settings) {
+          $options[$view_mode] = $view_mode_settings['label'];
+        }
+      }
+      $element['view_mode'] = array(
+        '#type' => 'select',
+        '#options' => $options,
+        '#title' => t('View mode'),
+        '#default_value' => $settings['view_mode'],
+        '#access' => count($options) > 1,
+      );
+      $element['links'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Show links'),
+        '#default_value' => $settings['links'],
+      );
+      break;
+  }
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary().
+ */
+function trade_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $summary = '';
+
+  switch ($display['type']) {
+    case 'trade_product_gallery_image':
+      $image_styles = image_style_options(FALSE, PASS_THROUGH);
+
+      $settings = array_merge(array(
+        'image_preview_is' => TRADE_PRODUCT_PREVIEW_IS,
+        'image_thumb_is' => TRADE_PRODUCT_THUMB_IS,
+        'image_nav_view_count' => TRADE_PRODUCT_GALLERY_NAV_COUNT,
+      ), array_filter($settings));
+      // Unset possible 'No defined styles' option.
+      unset($image_styles['']);
+      $summary[] = t('Image preview style: @style', array('@style' => $image_styles[$settings['image_preview_is']]));
+      $summary[] = t('Image thumbnail style: @style', array('@style' => $image_styles[$settings['image_thumb_is']]));
+      $summary[] = t('Image navigator count: @count', array('@count' => $settings['image_nav_view_count']));
+      break;
+    case 'trade_first_image':
+      $image_styles = image_style_options(FALSE, PASS_THROUGH);
+
+      // Unset possible 'No defined styles' option.
+      unset($image_styles['']);
+
+      // Styles could be lost because of enabled/disabled modules that defines
+      // their styles in code.
+      if (isset($image_styles[$settings['image_style']])) {
+        $summary[] = t('Image style: @style', array('@style' => $image_styles[$settings['image_style']]));
+      }
+      else {
+        $summary[] = t('Original image');
+      }
+      $link_types = array(
+        'content' => t('Linked to content'),
+        'file' => t('Linked to file'),
+      );
+
+      // Display this setting only if image is linked.
+      if (isset($link_types[$settings['image_link']])) {
+        $summary[] = $link_types[$settings['image_link']];
+      }
+      break;
+
+    case 'trade_entityreference_entity_view':
+      $entity_info = entity_get_info($field['settings']['target_type']);
+      $view_mode_label = $settings['view_mode'] == 'default' ? t('Default') : $settings['view_mode'];
+      if (isset($entity_info['view modes'][$settings['view_mode']]['label'])) {
+        $view_mode_label = $entity_info['view modes'][$settings['view_mode']]['label'];
+      }
+      $summary[] = t('Rendered as @mode', array('@mode' => $view_mode_label));
+      $summary[] = !empty($settings['links']) ? t('Display links') : t('Do not display links');
+      break;
+  }
+  return !empty($summary) ? implode('<br />', $summary) : '';
+}
+
+/**
+ * Implements hook_field_formatter_prepare_view().
+ */
+function trade_field_formatter_prepare_view($entity_type, $entities, $field, $instances, $langcode, &$items, $displays) {
+
+  if ($field['type'] == 'entityreference') {
+    $target_ids = array();
+
+    // Collect every possible entity attached to any of the entities.
+    foreach ($entities as $id => $entity) {
+      foreach ($items[$id] as $delta => $item) {
+        if (isset($item['target_id'])) {
+          $target_ids[] = $item['target_id'];
+        }
+      }
+    }
+
+    if ($target_ids) {
+      $target_entities = entity_load($field['settings']['target_type'], $target_ids);
+    }
+    else {
+      $target_entities = array();
+    }
+
+    // Iterate through the fieldable entities again to attach the loaded data.
+    foreach ($entities as $id => $entity) {
+      $rekey = FALSE;
+
+      foreach ($items[$id] as $delta => $item) {
+        // Check whether the referenced entity could be loaded.
+        if (isset($target_entities[$item['target_id']])) {
+          // Replace the instance value with the term data.
+          $items[$id][$delta]['entity'] = $target_entities[$item['target_id']];
+          // Check whether the user has access to the referenced entity.
+          $has_view_access = (entity_access('view', $field['settings']['target_type'], $target_entities[$item['target_id']]) !== FALSE);
+          $has_update_access = (entity_access('update', $field['settings']['target_type'], $target_entities[$item['target_id']]) !== FALSE);
+          $items[$id][$delta]['access'] = ($has_view_access || $has_update_access);
+        }
+        // Otherwise, unset the instance value, since the entity does not exist.
+        else {
+          unset($items[$id][$delta]);
+          $rekey = TRUE;
+        }
+      }
+
+      if ($rekey) {
+        // Rekey the items array.
+        $items[$id] = array_values($items[$id]);
+      }
+    }
+  }
+
+}
+
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function trade_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  $settings = $display['settings'];
+
+  // Rebuild the items list to contain only those with access.
+  if ($field['type'] == 'entityreference') {
+    foreach ($items as $key => $item) {
+      if (empty($item['access'])) {
+        unset($items[$key]);
+      }
+    }
+  }
+  switch ($display['type']) {
+    case 'trade_product_gallery_image':
+      $settings = array_merge(array(
+        'image_preview_is' => TRADE_PRODUCT_PREVIEW_IS,
+        'image_thumb_is' => TRADE_PRODUCT_THUMB_IS,
+        'image_nav_view_count' => TRADE_PRODUCT_GALLERY_NAV_COUNT,
+      ), array_filter($settings));
+      if (!empty($items)) {
+        $element = array(
+          array(
+            '#theme' => 'trade_product_image_gallery',
+            '#items' => $items,
+            '#sett' => $settings,
+          )
+        );
+      }
+
+      break;
+    case 'trade_first_image':
+      if ($display['settings']['image_link'] == 'content') {
+        $uri = entity_uri($entity_type, $entity);
+      }
+      elseif ($display['settings']['image_link'] == 'file') {
+        $link_file = TRUE;
+      }
+      foreach ($items as $delta => $item) {
+        if (isset($link_file)) {
+          $uri = array(
+            'path' => file_create_url($item['uri']),
+            'options' => array(),
+          );
+        }
+        $element[$delta] = array(
+          '#theme' => 'image_formatter',
+          '#item' => $item,
+          '#image_style' => $display['settings']['image_style'],
+          '#path' => isset($uri) ? $uri : '',
+        );
+        break;
+      }
+      break;
+    case 'trade_entityreference_entity_view':
+      $elements = array();
+      foreach ($items as $delta => $item) {
+        // Protect ourselves from recursive rendering.
+        static $depth = 0;
+        $depth++;
+        if ($depth > 20) {
+          throw new EntityReferenceRecursiveRenderingException(t('Recursive rendering detected when rendering entity @entity_type(@entity_id). Aborting rendering.', array(
+            '@entity_type' => $entity_type,
+            '@entity_id' => $item['target_id']
+          )));
+        }
+        $entity = clone $item['entity'];
+        unset($entity->content);
+        $elements[$delta] = entity_view($field['settings']['target_type'], array($item['target_id'] => $entity), $settings['view_mode'], $langcode, FALSE);
+
+        if (empty($settings['links']) && isset($result[$delta][$field['settings']['target_type']][$item['target_id']]['links'])) {
+          $elements[$delta][$field['settings']['target_type']][$item['target_id']]['links']['#access'] = FALSE;
+        }
+        $depth = 0;
+      }
+      if (!empty($elements)) {
+        $element[0] = array(
+          '#type' => 'container',
+          '#attributes' => array(
+            'class' => array('trade-product-teaser-list', 'trade-opacity'),
+          ),
+          'inner' => $elements,
+        );
+      }
+      break;
+    case 'trade_text_plain_as_link':
+      $options = array();
+      if (!empty($entity->nid)) {
+        if (!empty($entity->title)) {
+          $options['attributes']['title'] = $entity->title;
+        }
+        $path = "node/{$entity->nid}";
+      }
+      foreach ($items as $delta => $item) {
+        if (!empty($path)) {
+          $element[$delta] = array(
+            '#markup' => l(strip_tags($item['value']), $path, $options)
+          );
+        }
+        else {
+          $element[$delta] = array(
+            '#markup' => strip_tags($item['value'])
+          );
+        }
+      }
+      break;
+    case 'trade_list_boolean':
+      foreach ($items as $delta => $item) {
+        $filter_value = field_filter_xss($item['value']);
+        if (!empty($filter_value)) {
+          $element[$delta] = array(
+            '#prefix' => '<div class="trade-list-boolean-checked">',
+            '#suffix' => '</div>',
+            '#markup' => $instance['label']
+          );
+        }
+      }
+      break;
+  }
+  return $element;
+}
+
+/**
+ * Act on a field instance being deleted.
+ *
+ * This hook is invoked from field_delete_instance() after the instance is
+ * deleted.
+ *
+ * @param $instance
+ *   The instance just deleted.
+ */
+function trade_field_delete_instance($instance) {
+
+  // clear product option with prices
+  _trade_product_delete_option_with_price_on_delete($instance);
+}
+
+/**
+ * Acts when a field record is being purged.
+ *
+ * In field_purge_field(), after the field configuration has been
+ * removed from the database, the field storage module has had a chance to
+ * run its hook_field_storage_purge_field(), and the field info cache
+ * has been cleared, this hook is invoked on all modules to allow them to
+ * respond to the field being purged.
+ *
+ * @param $field
+ *   The field being purged.
+ */
+function trade_field_purge_field($field) {
+
+  // clear product option with prices
+  _trade_product_delete_option_with_price_on_delete($field, 'field');
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function trade_preprocess_page(&$variables) {
+  $m_path = drupal_get_path('module', 'trade');
+
+// include libraries for product page
+  if ($node = menu_get_object()) {
+    if (!empty($node->type) && in_array($node->type, variable_get('trade_product_node_types', array('product')), TRUE)) {
+
+
+      // for upholstery cache extra field
+      // include bfe files
+      $bfe_path = drupal_get_path('module', 'custom_bfe');
+      drupal_add_js($bfe_path . '/js/custom_bfe_form_item_radios.js');
+      drupal_add_css($bfe_path . '/css/custom_bfe_form_item_radios.css');
+      // include
+      // $form['#attributes']['class'][] = 'trade-product-option-upholstery-picker';
+      drupal_add_css($m_path . '/css/trade_upholstery_picker.css');
+      drupal_add_js($m_path . '/js/trade_upholstery_picker.js');
+      // include tooltip
+      drupal_add_css($m_path . '/css/trade_color_picker.css');
+      drupal_add_library('system', 'ui.tooltip');
+
+      //color picker
+      $build['#attached']['css'][] = $m_path . '/css/trade_color_picker.css';
+      $build['#attached']['js'][] = $m_path . '/js/trade_color_picker.js';
+      drupal_add_library('system', 'ui.tooltip');
+
+      // include masonry
+      $masonry_path = libraries_get_path('masonry');
+      if ($masonry_path) {
+        drupal_add_js($masonry_path . '/masonry.pkgd.min.js');
+        drupal_add_js($masonry_path . '/imagesloaded.pkgd.min.js');
+        drupal_add_js($masonry_path . '/jquery.easing.1.3.js');
+      }
+      drupal_add_js($m_path . '/js/trade_product_full_page.js');
+    }
+  }
+}
+
+function trade_preprocess_node(&$vars) {
+//add trade-product class
+  $trade_product_node_types = array_filter(variable_get('trade_product_node_types', array()));
+
+  if (!empty($vars['type']) && isset($trade_product_node_types[$vars['type']])) {
+    $vars['classes_array'][] = 'trade-product';
+  }
+}
+
+function trade_cookie_save(array $values) {
+  foreach ($values as $field => $value) {
+    // Set cookie for 365 days.
+    setrawcookie('Drupal.trade.' . $field, rawurlencode($value), REQUEST_TIME + 31536000, '/');
+  }
+}
+
+function trade_cookie_delete($cookie_name) {
+  setrawcookie('Drupal.trade.' . $cookie_name, '', REQUEST_TIME - 3600, '/');
+}
+
+function _trade_currency_separator($separate = '') {
+  $sep_char = '';
+  if (empty($separate)) {
+    $separate = variable_get('trade_format_number_separator', 'space');
+  }
+  if ($separate != '_none') {
+    switch ($separate) {
+      case 'space':
+        $sep_char = "&nbsp;";
+        break;
+      case 'comma':
+        $sep_char = ',';
+        break;
+      case 'quotes':
+        $sep_char = "'";
+        break;
+      default:
+        $sep_char = "&nbsp;";
+    }
+  }
+  return $sep_char;
+}
+
+function _trade_format_number($str = '', $separate = '') {
+  if (empty($separate)) {
+    $separate = variable_get('trade_format_number_separator', 'space');
+  }
+  if (!empty($str) && $separate != '_none') {
+    $spec_amount = array();
+    $spec_amount_res = array();
+    $spec_amount_int = (int) $str;
+    $spec_amount_len = drupal_strlen($spec_amount_int);
+
+    for ($i = 0; $i < $spec_amount_len; $i++) {
+      $spec_amount[] = substr($spec_amount_int, $i, 1);
+    }
+
+    $spec_amount = array_reverse($spec_amount);
+    $spec_amount_th_len = $spec_amount_len / 3;
+    if ($spec_amount_len % 3) {
+      $spec_amount_th_len++;
+    }
+
+    for ($i = 0; $i < $spec_amount_th_len; $i++) {
+      $spec_amount_res = array_merge($spec_amount_res, array_slice($spec_amount, $i * 3, 3));
+      switch ($separate) {
+        case 'space':
+          $sep_char = "&nbsp;";
+          break;
+        case 'comma':
+          $sep_char = ',';
+          break;
+        case 'quotes':
+          $sep_char = "'";
+          break;
+        default:
+          $sep_char = "&nbsp;";
+      }
+      $spec_amount_res[] = $sep_char;
+    }
+
+    $str = trim(trim(implode('', array_reverse($spec_amount_res)), "&nbsp;,'"));
+  }
+  return $str;
+}
+
+function _trade_order_mail_notify($op = '', $order = NULL, $language = NULL) {
+
+  if (is_array($order) && !empty($order['order_id'])) {
+    $order = trade_order_load($order['order_id']);
+  }
+
+  $params['order'] = $order;
+  $language = $language ? $language : language_default();
+  $result = TRUE;
+
+  $mail = drupal_mail('trade', $op, $order->mail, $language, $params);
+
+  if (empty($mail['result'])) {
+    $result = FALSE;
+  }
+
+  // administration users notify
+  $rids = db_query("SELECT rid FROM {role_permission} WHERE permission = :perm", array(':perm' => 'notify about create orders'))->fetchCol();
+  if (!empty($rids)) {
+    $users_query = db_select('users', 'u')->fields('u', array('mail'))->condition('u.status', 1);
+    $users_query->innerJoin('users_roles', 'ur', 'ur.uid = u.uid');
+    $users_query->condition('ur.rid', $rids, 'IN');
+    $users_mails = $users_query->execute()->fetchCol();
+
+    if (!empty($users_mails)) {
+      foreach ($users_mails as $to_mail) {
+        $mail = drupal_mail('trade', $op, $to_mail, $language, $params);
+        if (empty($mail['result'])) {
+          $result = FALSE;
+        }
+      }
+    }
+  }
+
+  return $result;
+}
+
+/**
+ * Implements hook_mail().
+ */
+function trade_mail($key, &$message, $params) {
+  $language = $message['language'];
+
+  $signature = array();
+  $signature[] = t('Thank you for your order.');
+  $signature[] = t('You will be contacted shortly.');
+  $signature[] = t('Please do not reply to this email.');
+  $signature[] = token_replace('Regards, <a href="[site:url]">[site:name]</a>');
+
+  switch ($key) {
+    case 'trade_order_create':
+      $subject = t('Order #!num', array('!num' => $params['order']->order_id));
+      $message['subject'] .= $subject;
+      $opts = array('view_mode' => 'mail');
+      $message['body'][] = theme('trade_order_view', array(
+        'order' => $params['order'],
+        'options' => $opts
+      ));
+      $message['body'][] = '<p><div>' . implode('</div><div>', $signature) . '</div></p>';
+      break;
+  }
+}
+
+function _trade_product_get_count() {
+  $product_types = array_filter(variable_get('trade_product_node_types', array('product')));
+
+  $query_nids = db_select('node', 'n')->fields('n')
+    ->condition('n.status', 1)
+    ->condition('n.type', $product_types, 'IN');
+
+  $nids = $query_nids->execute()->fetchCol();
+  return !empty($nids) ? count($nids) : 0;
+}
+
+function _trade_product_get_nids() {
+  $product_types = array_filter(variable_get('trade_product_node_types', array('product')));
+  $query_nids = db_select('node', 'n')->fields('n')
+    ->condition('n.status', 1)
+    ->condition('n.type', $product_types, 'IN');
+
+  $nids = $query_nids->execute()->fetchCol();
+  return !empty($nids) ? $nids : array();
+}
+
+/**
+ * Batch operation for batch 1: load a node.
+ *
+ * This is the function that is called on each operation in batch 1.
+ */
+function _trade_batch_pcache_op($nid, $operation_details, &$context) {
+
+  $nids = array($nid);
+  $nodes = node_load_multiple($nids);
+
+  $view_mode = 'teaser';
+  $langcode = NULL;
+
+  field_attach_prepare_view('node', $nodes, $view_mode, $langcode);
+  entity_prepare_view('node', $nodes, $langcode);
+
+  foreach ($nodes as $node) {
+    $cache_data = _trade_product_get_pcache($node, $view_mode);
+    $data = serialize(node_view($node, $view_mode, $langcode));
+    $created = format_date(REQUEST_TIME, 'custom', 'c');
+    if (!empty($cache_data)) {
+      //update
+      $fields = array(
+        'data' => $data,
+        'created' => $created,
+      );
+      db_update('trade_pcache')
+        ->fields($fields)
+        ->condition('view_mode', $view_mode)
+        ->condition('nid', $node->nid)
+        ->execute();
+    }
+    else {
+      $fields = array(
+        'nid' => $node->nid,
+        'view_mode' => $view_mode,
+        'data' => $data,
+        'created' => format_date(REQUEST_TIME, 'custom', 'c'),
+      );
+      db_insert('trade_pcache')->fields($fields)->execute();
+    }
+
+  }
+
+  $context['results'][] = $node->nid . ' : ' . check_plain($node->title);
+
+  // Optional message displayed under the progressbar.
+  $context['message'] = t('Loading node "@title"', array('@title' => $node->title)) . ' ' . $operation_details;
+
+  _trade_batch_pcache_update_http_requests();
+}
+
+/**
+ * Utility function to increment HTTP requests in a session variable.
+ */
+function _trade_batch_pcache_update_http_requests() {
+  $_SESSION['http_request_count']++;
+}
+
+function _trade_batch_pcache_finished($success, $results, $operations) {
+  if ($success) {
+    // Here we could do something meaningful with the results.
+    // We just display the number of nodes we processed...
+    drupal_set_message(t('@count results processed in @requests HTTP requests.', array(
+      '@count' => count($results),
+      '@requests' => _trade_batch_pcache_get_http_requests()
+    )));
+    drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    drupal_set_message(
+      t('An error occurred while processing @operation with arguments : @args',
+        array(
+          '@operation' => $error_operation[0],
+          '@args' => print_r($error_operation[0], TRUE),
+        )
+      )
+    );
+  }
+}
+
+function _trade_batch_pcache_get_http_requests() {
+  return !empty($_SESSION['http_request_count']) ? $_SESSION['http_request_count'] : 0;
+}
+
+function _trade_batch_pcache_batch($nids = array()) {
+
+  $count_nids = count($nids);
+  drupal_set_message(format_plural($count_nids, 'Cache 1 product', 'Cache @count products'));
+  $operations = array();
+
+  foreach ($nids as $i => $nid) {
+    $operations[] = array(
+      '_trade_batch_pcache_op',
+      array(
+        $nid,
+        t('(Product #@operation)', array('@operation' => $i)),
+      ),
+    );
+  }
+
+  $batch = array(
+    'operations' => $operations,
+    'finished' => '_trade_batch_example_finished',
+  );
+  return $batch;
+}
+
+function trade_cron() {
+
+// delete order without lines older 24 hour
+  $order_w_lines = db_select('trade_order_line', 'tol')->fields('tol', array('order_id'))->execute()->fetchCol();
+  if (!empty($order_w_lines)) {
+    $order_w_lines = array_unique($order_w_lines);
+    $time_old = time() - 10800;
+    $date_old = format_date($time_old, 'custom', 'c');
+
+    $order_old = db_select('trade_order', 'tor')
+      ->fields('tor', array('order_id'))
+      ->condition('tor.uid', 0)
+      ->condition('tor.created', $date_old, '<')
+      ->condition('tor.order_id', $order_w_lines, 'NOT IN')
+      ->range(0, 50000)
+      ->execute()->fetchCol();
+
+    if ($order_old) {
+      db_delete('trade_order')->condition('order_id', $order_old, 'IN')->execute();
+    }
+  }
+}
+
+function trade_init() {
+  global $user;
+
+  // ajax reload block
+  if (empty($user->uid)) {
+    $m_path = drupal_get_path('module', 'trade');
+    drupal_add_js($m_path . '/js/trade_cart.js');
+  }
+}
+
+function trade_trigger_info() {
+  return array(
+    'trade' => array(
+      'trade_order_create' => array(
+        'label' => t('After create new order'),
+      ),
+      'trade_order_update' => array(
+        'label' => t('After update order'),
+      ),
+      'trade_order_delete' => array(
+        'label' => t('After delete order'),
+      ),
+    ),
+  );
+}
+
+function trade_module_invoke($type, &$order) {
+  foreach (module_implements('trade_order_' . $type) as $module) {
+    $function = $module . '_trade_order_' . $type;
+    $function($order);
+  }
+}
+
+function trade_trade_order_create($order) {
+  watchdog('trade', 'Trade order #@num was created', array('@num' => $order->order_id));
+}
+
+function trade_trade_order_update($order) {
+  watchdog('trade', 'Trade order #@num updated', array('@num' => $order->order_id));
+}
+
+function trade_trade_order_delete($order) {
+  watchdog('trade', 'Trade order #@num was deleted', array('@num' => $order->order_id));
+}
+
+function trade_shipping_load($sid = 0) {
+  $query = db_select('trade_shipping', 'ts')->fields('ts')->condition('ts.sid', $sid);
+  return $query->execute()->fetchObject();
+}
+
+function trade_shipping_load_multiply($sids = array()) {
+  $query = db_select('trade_shipping', 'ts')->fields('ts')->orderBy('ts.weight', 'ASC');
+  if (!empty($sids)) {
+    $query->condition('ts.sid', $sids, 'IN');
+  }
+  return $query->execute()->fetchAll();
+}

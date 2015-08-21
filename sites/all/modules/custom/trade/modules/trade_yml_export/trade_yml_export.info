@@ -1,0 +1,6 @@
+name = Trade YML export
+description = YML export for trade products (Yandex.Market)
+package = Trade
+configure = admin/config/trade/yml-export
+dependencies[] = trade
+core = 7.x

@@ -1,0 +1,11 @@
+.custom-formatter-tooltip-content {
+    display: none;
+}
+
+.custom-formatter-tooltip.custom-formatter-tooltip {
+    background: white;
+}
+
+.ui-tooltip.custom-formatter-tooltip {
+    max-width: none;
+}

@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * @file
+ * Custom seo function module
+ */
+
+/**
+ * fix simplemeta must be overwrite metatag
+ */
+function custom_seo_html_head_alter(&$head_elements) {
+  foreach ($head_elements as $key => $element) {
+    $meta = str_replace('metatag_', '', $key);
+    if (isset($head_elements['simplemeta_' . $meta])) {
+      unset($head_elements[$key]);
+    }
+  }
+}

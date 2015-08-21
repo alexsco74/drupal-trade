@@ -1,0 +1,13 @@
+.trade-collapsible-container-link {
+    padding-left: 10px;
+    background: url(../images/trade-collapsible-open.png) no-repeat 0 5px;
+    display: inline-block;
+}
+
+.trade-collapsible-container-link:hover {
+    cursor: pointer;
+}
+
+.trade-collapsible-container-close .trade-collapsible-container-link {
+    background: url(../images/trade-collapsible-close.png) no-repeat 0 5px;
+}

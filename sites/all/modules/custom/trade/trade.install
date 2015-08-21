@@ -1,0 +1,603 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the trade module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function trade_schema() {
+  $schema = array();
+
+  $schema['trade_price'] = array(
+    'description' => 'Trade prices.',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid',
+      ),
+      'price' => array(
+        'description' => 'The price amount',
+        'type' => 'numeric',
+        'precision' => 16,
+        'scale' => 0,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+  $schema['trade_option'] = array(
+    'description' => 'Trade product options',
+    'fields' => array(
+      'pid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique option ID.',
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid',
+      ),
+      'field_name' => array(
+        'type' => 'varchar',
+        'length' => 38,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => "Field name",
+      ),
+      'field_value' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Option value',
+      ),
+      'is_default' => array(
+        'description' => 'Boolean indicating whether the option is default.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('pid'),
+    'indexes' => array(
+      'trade_option_nid_name' => array('nid', 'field_name'),
+      'trade_option_nid_name_value' => array('nid', 'field_name', 'field_value'),
+      'trade_option_is_default' => array('nid', 'field_name', 'is_default'),
+    ),
+  );
+
+  $schema['trade_option_price'] = array(
+    'description' => 'Trade product options price',
+    'fields' => array(
+      'cid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique option price ID.',
+      ),
+      'pid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {trade_option}.pid',
+      ),
+      'price' => array(
+        'description' => 'The price amount',
+        'type' => 'numeric',
+        'precision' => 16,
+        'scale' => 0,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('cid'),
+    'indexes' => array(
+      'trade_option_price_cid_pid' => array('cid', 'pid'),
+    ),
+  );
+
+  $schema += _trade_order_scheme();
+  $schema += _trade_order_line_scheme();
+  $schema += _trade_order_line_option_scheme();
+  $schema += _trade_service_scheme();
+  $schema += _trade_pchache_scheme();
+  $schema += _trade_uph_chache_scheme();
+  $schema += _trade_shipping_scheme();
+  return $schema;
+}
+
+function _trade_service_scheme() {
+  $schema['trade_service'] = array(
+    'description' => 'Trade service.',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid',
+      ),
+      'data' => array(
+        'description' => 'The serialize data.',
+        'type' => 'blob',
+        'not null' => TRUE,
+        'size' => 'big',
+        'translatable' => TRUE,
+      ),
+    ),
+    'primary key' => array('nid'),
+  );
+  return $schema;
+}
+
+function _trade_shipping_scheme() {
+  $schema['trade_shipping'] = array(
+    'description' => 'Trade shipping',
+    'fields' => array(
+      'sid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique ID.',
+      ),
+      'title' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+        'description' => 'Title',
+      ),
+      'amount' => array(
+        'description' => 'Amount',
+        'type' => 'numeric',
+        'precision' => 34,
+        'scale' => 0,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'weight' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The weight',
+      ),
+    ),
+    'indexes' => array(
+      'trade_shipping_weight' => array('weight'),
+    ),
+    'primary key' => array('sid'),
+  );
+  return $schema;
+}
+
+function _trade_uph_chache_scheme() {
+  $schema['trade_uph_cache'] = array(
+    'description' => 'Trade product upholstery cache.',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid',
+      ),
+      'data' => array(
+        'description' => 'The serialize data (cache).',
+        'type' => 'blob',
+        'not null' => TRUE,
+        'size' => 'big',
+      ),
+      'created' => array(
+        'type' => 'varchar',
+        'length' => 25,
+        'not null' => FALSE,
+        'description' => 'Created ISO 8601 datetime.',
+      ),
+    ),
+    'primary key' => array('nid'),
+    'indexes' => array(
+      'trade_uph_cache_created' => array('created'),
+    ),
+  );
+  return $schema;
+}
+
+function _trade_pchache_scheme() {
+  $schema['trade_pcache'] = array(
+    'description' => 'Trade product cache.',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {node}.nid',
+      ),
+      'view_mode' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'View mode',
+      ),
+      'data' => array(
+        'description' => 'The serialize data (cache).',
+        'type' => 'blob',
+        'not null' => TRUE,
+        'size' => 'big',
+        'translatable' => TRUE,
+      ),
+      'created' => array(
+        'type' => 'varchar',
+        'length' => 25,
+        'not null' => FALSE,
+        'description' => 'Created ISO 8601 datetime.',
+      ),
+    ),
+    'primary key' => array('nid', 'view_mode'),
+    'indexes' => array(
+      'trade_pcache_created' => array('created'),
+    ),
+  );
+  return $schema;
+}
+
+function _trade_order_scheme() {
+  $schema['trade_order'] = array(
+    'description' => 'Trade order',
+    'fields' => array(
+      'order_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique order ID.',
+      ),
+      'trade_uid' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Trade user ID',
+      ),
+      'created' => array(
+        'type' => 'varchar',
+        'length' => 25,
+        'not null' => FALSE,
+        'description' => 'Created ISO 8601 datetime.',
+      ),
+      'changed' => array(
+        'type' => 'varchar',
+        'length' => 25,
+        'not null' => FALSE,
+        'description' => 'Changed ISO 8601 datetime.',
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => FALSE,
+        'default' => 0,
+        'description' => 'User {users}.uid',
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Unique user name.',
+      ),
+      'mail' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => FALSE,
+        'default' => '',
+        'description' => "User's e-mail address.",
+      ),
+      'phone' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => "User's phones.",
+      ),
+      'address' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Address',
+      ),
+      'comment' => array(
+        'type' => 'text',
+        'not null' => FALSE,
+        'size' => 'big',
+        'description' => 'Comment',
+      ),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'Whether the user is active(1) or blocked(0).',
+      ),
+      'product_count' => array(
+        'description' => 'The total product quantity of the order.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'amount' => array(
+        'description' => 'Amount',
+        'type' => 'numeric',
+        'precision' => 34,
+        'scale' => 0,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'currency' => array(
+        'description' => 'The ISO currency code for the order.',
+        'type' => 'char',
+        'length' => 3,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'data' => array(
+        'description' => 'A serialized array of extra data.',
+        'type' => 'text',
+        'serialize' => TRUE,
+      ),
+      'service' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of service.',
+      ),
+    ),
+    'indexes' => array(
+      'trade_order_uid' => array('uid'),
+      'trade_order_trade_uid' => array('trade_uid'),
+      'trade_order_changed' => array('changed'),
+      'trade_order_mail' => array('mail'),
+      'trade_order_phone' => array('phone'),
+      'trade_order_status' => array('status'),
+    ),
+    'primary key' => array('order_id'),
+    'foreign keys' => array(
+      'users' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+  return $schema;
+}
+
+function _trade_order_line_scheme() {
+  $schema['trade_order_line'] = array(
+    'description' => 'Trade order line.',
+    'fields' => array(
+      'order_line_id' => array(
+        'description' => 'Primary key: the line item ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'order_id' => array(
+        'description' => 'The {trade_order}.order_id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'type' => array(
+        'description' => 'The line item type.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'order_entity_id' => array(
+        'description' => 'Line entity_id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'title' => array(
+        'description' => 'The label of the line item.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'price' => array(
+        'description' => 'The price amount',
+        'type' => 'numeric',
+        'precision' => 16,
+        'scale' => 0,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'quantity' => array(
+        'description' => 'Quantity.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'amount' => array(
+        'description' => "The amount of the line item.",
+        'type' => 'numeric',
+        'precision' => 16,
+        'scale' => 0,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'data' => array(
+        'description' => 'A serialized array of extra data.',
+        'type' => 'text',
+        'serialize' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'order_id' => array('order_id'),
+      'order_entity_id' => array('order_entity_id'),
+    ),
+    'primary key' => array('order_line_id'),
+    'foreign keys' => array(
+      'trade_order' => array(
+        'table' => 'trade_order',
+        'columns' => array('order_id' => 'order_id'),
+      ),
+    ),
+  );
+  return $schema;
+}
+
+function _trade_order_line_option_scheme() {
+  $schema['trade_order_line_option'] = array(
+    'description' => 'Trade order line option.',
+    'fields' => array(
+      'order_line_option_id' => array(
+        'description' => 'Primary key: the line item option ID.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'order_line_id' => array(
+        'description' => 'The {trade_order_line}.order_line_id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'option_field' => array(
+        'description' => 'Option field name . ',
+        'type' => 'varchar',
+        'length' => 32,
+        'not NULL' => TRUE,
+        'default' => '',
+      ),
+      'option_entity_id' => array(
+        'description' => 'Option entity_id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'option_title' => array(
+        'description' => 'Option title . ',
+        'type' => 'varchar',
+        'length' => 255,
+        'not NULL' => TRUE,
+        'default' => '',
+      ),
+    ),
+    'indexes' => array(
+      'order_line_id' => array('order_line_id'),
+      'order_line_option_field' => array('option_field'),
+      'order_line_option_entity_id' => array('option_entity_id'),
+    ),
+    'primary key' => array('order_line_option_id'),
+    'foreign keys' => array(
+      'trade_order_line' => array(
+        'table' => 'trade_order_line',
+        'columns' => array('order_line_id' => 'order_line_id'),
+      ),
+    ),
+  );
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function trade_uninstall() {
+  db_delete('variable')->condition('name', db_like('trade_') . ' % ', 'LIKE')->execute();
+}
+
+/**
+ * Create order tables.
+ */
+function trade_update_7008() {
+  foreach (array('trade_order', 'trade_order_line', 'trade_order_line_option') as $table) {
+    if (!db_table_exists($table)) {
+      $schema_key = '_' . $table . '_scheme';
+      $schema = $schema_key();
+      db_create_table($table, $schema[$table]);
+    }
+  }
+}
+
+/**
+ * Create service table.
+ */
+function trade_update_7010() {
+  $table = 'trade_service';
+  $schema = _trade_service_scheme();
+  if (!db_table_exists($table)) {
+    db_create_table($table, $schema[$table]);
+  }
+}
+
+/**
+ * Create product cache table.
+ */
+function trade_update_7011() {
+  $table = 'trade_pcache';
+  $schema = _trade_pchache_scheme();
+  if (!db_table_exists($table)) {
+    db_create_table($table, $schema[$table]);
+  }
+}
+
+/**
+ * Add service field in order.
+ */
+function comment_update_7012() {
+  db_add_field('trade_order', 'service', array(
+      'type' => 'blob',
+      'not null' => FALSE,
+      'size' => 'big',
+      'serialize' => TRUE,
+      'description' => 'A serialized array of service.',
+    )
+  );
+}
+
+/**
+ * Create product upholstery cache table.
+ */
+function trade_update_7014() {
+  $table = 'trade_uph_cache';
+  $schema = _trade_uph_chache_scheme();
+  if (!db_table_exists($table)) {
+    db_create_table($table, $schema[$table]);
+  }
+}
+
+/**
+ * Add product option default field.
+ */
+function trade_update_7015() {
+  db_add_field('trade_option', 'is_default', array(
+      'description' => 'Boolean indicating whether the option is default.',
+      'type' => 'int',
+      'not null' => TRUE,
+      'default' => 0,
+    )
+  );
+  db_add_index('trade_option', 'trade_option_is_default', array('nid', 'field_name', 'is_default'));
+}
+
+/**
+ * Create shipping table.
+ */
+function trade_update_7016() {
+  $table = 'trade_shipping';
+  $schema = _trade_shipping_scheme();
+  if (!db_table_exists($table)) {
+    db_create_table($table, $schema[$table]);
+  }
+}

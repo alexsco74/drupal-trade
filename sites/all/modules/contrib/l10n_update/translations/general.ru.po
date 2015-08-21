@@ -1,0 +1,31 @@
+# Russian translation of l10n_update (7.x-1.0-beta3)
+# Copyright (c) 2013 by the Russian translation team
+# Generated from files:
+#  l10n_update/l10n_update.admin.inc: n/a
+#  l10n_update/l10n_update.drush.inc: n/a
+#  l10n_update/l10n_update.inc: n/a
+#  l10n_update/l10n_update.module: n/a
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: l10n_update (7.x-1.0-beta3)\n"
+"POT-Creation-Date: 2013-08-26 11:35+0400\n"
+"PO-Revision-Date: 2010-07-12 04:43+0400\n"
+"Language-Team: Russian\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=((((n%10)==1)&&((n%100)!=11))?(0):(((((n%10)>=2)&&((n%10)<=4))&&(((n%100)<10)||((n%100)>=20)))?(1):2));\n"
+
+#: l10n_update.admin.inc:530; l10n_update.drush.inc:82
+msgid "Up to date"
+msgstr "Обновлено"
+
+#: l10n_update.admin.inc:124,154; l10n_update.drush.inc:40
+msgid "Refresh information"
+msgstr "Обновить информацию"
+
+#: l10n_update.inc:111,116,119,123,130; l10n_update.module:102
+msgid "l10n_update"
+msgstr ""
+

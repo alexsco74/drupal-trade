@@ -1,0 +1,16 @@
+.qtip-default {
+    border: 1px solid #ccc !important;
+    background-color: #FFFFFF !important;
+}
+
+.qtip {
+    font-size: medium !important;
+    line-height: normal !important;
+    max-width: none !important;
+    direction: ltr;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -o-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    padding: 0;
+}

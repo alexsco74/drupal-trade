@@ -1,0 +1,151 @@
+<?php
+
+/**
+ * @file
+ * Custom field formatter function module
+ */
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function custom_formatter_field_formatter_info() {
+  return array(
+    'custom_formatter_taxonomy_term_description_tooltip' => array(
+      'label' => t('Description tooltip'),
+      'field types' => array('taxonomy_term_reference'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_theme().
+ */
+function custom_formatter_theme() {
+  return array(
+    'custom_formatter_qtip' => array(
+      'variables' => array(
+        'content' => NULL,
+        'title' => NULL,
+        'tooltip' => NULL,
+        'instance' => NULL,
+      ),
+      'file' => 'includes/custom_formatter.theme.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function custom_formatter_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  switch ($display['type']) {
+    case 'custom_formatter_taxonomy_term_description_tooltip':
+      foreach ($items as $delta => $item) {
+        $name = '';
+        $term = NULL;
+        if ($item['tid'] != 'autocreate') {
+          if (!empty($item['taxonomy_term']->name)) {
+            $term = $item['taxonomy_term'];
+          }
+          if (empty($term) && !empty($item['tid'])) {
+            $term = taxonomy_term_load($item['tid']);
+          }
+          if (!empty($term->name)) {
+            $name = $term->name;
+          }
+        }
+        else {
+          if (isset($item['name'])) {
+            $name = $item['name'];
+          }
+          elseif (!empty($item['tid']) && ($term = taxonomy_term_load($item['tid']))) {
+            $name = $term->name;
+          }
+        }
+        $description = '';
+        if (!empty($item['description'])) {
+          $description = $item['description'];
+        }
+        elseif (!empty($item['taxonomy_term']->description)) {
+          $description = $item['taxonomy_term']->description;
+        }
+        elseif (!empty($term->description)) {
+          $description = $term->description;
+        }
+        $check_plain_description = check_plain($description);
+        if (!empty($check_plain_description)) {
+
+          $use = 'ui';
+
+
+          // qtip
+          if (module_exists('qtip')) {
+            $use = 'qtip';
+          }
+
+          switch ($use) {
+
+            case 'qtip':
+              drupal_add_css(drupal_get_path('module', 'custom_formatter') . '/custom_formatter_qtip.css');
+
+              $theme_variables = array(
+                'content' => check_plain($name),
+                'instance' => 'simple', //variable_get('qtip_default_instance', ''),
+                'tooltip' => $description,
+              );
+
+              $element[$delta] = array(
+                '#markup' => theme('custom_formatter_qtip', $theme_variables)
+              );
+
+              break;
+            case 'ui':
+              //ui.tooltip name + description tooltip
+              $element[$delta] = array(
+                '#type' => 'container',
+                '#attached' => array(
+                  // Add Farbtastic color picker.
+                  'library' => array(
+                    array('system', 'ui.tooltip'),
+                  ),
+                  'js' => array(
+                    drupal_get_path('module', 'custom_formatter') . '/custom_formatter_tooltip.js'
+                  ),
+                  'css' => array(
+                    drupal_get_path('module', 'custom_formatter') . '/custom_formatter_tooltip.css'
+                  )
+                ),
+                '#attributes' => array('class' => array('custom-formatter-tooltip-wr')),
+                'tooltip_title' => array(
+                  '#theme' => 'html_tag',
+                  '#tag' => 'a',
+                  '#attributes' => array(
+                    'href' => '#',
+                    'class' => array('custom-formatter-tooltip-title'),
+                  ),
+                  '#value' => check_plain($name),
+                ),
+                'tooltip_content' => array(
+                  '#type' => 'container',
+                  '#attributes' => array('class' => array('custom-formatter-tooltip-content')),
+                  'tooltip_content_inner' => array(
+                    '#markup' => $description,
+                  ),
+                )
+              );
+          }
+        }
+        else {
+          //name
+          $element[$delta] = array(
+            '#markup' => (check_plain($name)),
+          );
+        }
+      }
+      break;
+  }
+
+  return $element;
+}

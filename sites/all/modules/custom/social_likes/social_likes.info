@@ -1,0 +1,7 @@
+; alexsco74@gmail.com
+name = Social likes
+description = https://github.com/sapegin/social-likes
+core = 7.x
+version = VERSION
+package = Custom
+dependencies[] = libraries (2.x)

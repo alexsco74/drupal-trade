@@ -1,0 +1,12 @@
+name = Go Dark For IE
+description = Implements dark screen for the Go Dark For IE event (http://godarkforie.org/).
+core = 7.x
+
+configure = admin/config/user-interface/go_dark_for_ie
+
+; Information added by drupal.org packaging script on 2012-08-29
+version = "7.x-1.x-dev"
+core = "7.x"
+project = "go_dark_for_ie"
+datestamp = "1346200702"
+

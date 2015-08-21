@@ -1,0 +1,388 @@
+.trade-table {
+    display: table;
+    width: 100%;
+    vetical-align: top;
+    position: relative;
+}
+
+.trade-table-row {
+    display: table-row;
+    position: relative;
+}
+
+.trade-table-cell {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.trade-notify {
+    color: #ffc907;
+}
+
+.trade-state-close,
+.trade-hidden {
+    display: none;
+}
+
+.trade-product-add-to-order-actions {
+    display: inline-block;
+}
+
+.trade-product-add-to-order-buy {
+    display: inline;
+}
+
+.trade-currency-wr {
+    padding-left: .25em;
+}
+
+.trade-field-price-form-item *,
+.trade-field-price-form-item label,
+.trade-numeric-slider-form-item *,
+.trade-numeric-slider-form-item label {
+    display: inline-block;
+}
+
+.trade-field-title {
+    display: block;
+    width: 100%;
+    font-weight: bold;
+}
+
+.trade-form-item {
+    display: inline-block;
+    vertical-align: top;
+    padding-right: 1rem;
+}
+
+.trade-form-item .trade-field-title {
+    width: auto;
+    display: block;
+    padding-bottom: .5rem;
+}
+
+td.trade-service-title {
+    vertical-align: top;
+    font-weight: bold;
+}
+
+.trade-order-total-all {
+    text-align: right;
+    font-size: 1.2rem;
+}
+
+.trade-form-item .form-item {
+    width: auto;
+}
+
+.trade-field-price-form-item label {
+    font-weight: bold;
+}
+
+.trade-product-option-color-viewer {
+    padding-top: .5rem;
+}
+
+.trade-edit-link-wr {
+    position: relative;
+    display: block;
+}
+
+.trade-edit-link {
+    font-size: 1rem;
+    border-top: 1px dotted #ccc;
+    border-left: 1px dotted #ccc;
+    border-right: 1px dotted #ccc;
+    border-radius: 3px 3px 0 0;
+    background: #fff;
+    padding: .2rem .5rem;
+}
+
+.trade-ajax-load-process {
+    cursor: wait;
+    position: relative;
+}
+
+.trade-ajax-load-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    opacity: .9;
+    border: none;
+    z-index: 9999;
+}
+
+.trade-ajax-load-overlay-center {
+    border: none;
+    opacity: .1;
+}
+
+.trade-ajax-load-process-inner {
+    /* opacity: .1; */
+}
+
+ul.trade-ajax-load-process {
+    opacity: 1;
+}
+
+.trade-ajax-load-process-wait {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 10px;
+    left: 10px;
+    background: transparent url(../images/progress.gif) 50% 50% repeat-x;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+    border-radius: 10px;
+    opacity: 1;
+    z-index: 9999;
+}
+
+.trade-ajax-load-process-wait-center {
+    top: 50%;
+    left: 50%;
+    margin-top: -10px;
+    margin-left: -10px;
+}
+
+.trade-format-number {
+    text-align: right;
+}
+
+.form-item-order-line-delete.form-item.form-type-checkbox input.form-checkbox + label {
+    display: inline-block;
+    vertical-align: middle;
+    padding-left: 0;
+    width: 13px;
+    height: 14px;
+    text-indent: -9999px;
+    overflow: hidden;
+    text-align: left;
+    background: url(../images/delete.png) no-repeat center 0;
+}
+
+.form-item-order-line-delete.form-item.form-type-checkbox input.form-checkbox:checked + label {
+    background: none;
+}
+
+.node-teaser.node-product .panel-flexible-inside {
+    border: 1px dashed transparent;
+}
+
+.trade-product-service-field-title,
+.trade-extra-field-title {
+    font-weight: bold;
+    display: block;
+    padding-bottom: .5rem;
+}
+
+.trade-product-service-field-items {
+    padding-bottom: 1rem;
+}
+
+.trade-order-service-data .form-item, .trade-order-service-data .form-item label {
+    display: inline-block;
+}
+
+.trade-order-service-data .form-item .form-select {
+    width: auto;
+}
+
+.trade-opacity {
+    opacity: 0;
+    -webkit-transition: all .5s ease-out .1s;
+    -moz-transition: all .5s ease-out .1s;
+    -o-transition: all .5s ease-out .1s;
+    -ms-transition: all .5s ease-out .1s;
+    transition: all .5s ease-out .1s;
+
+}
+
+.trade-opacity.trade-opacity-slide-show {
+    opacity: 1;
+}
+
+.trade-view-mode-teaser {
+    display: inline-block;
+    vertical-align: top;
+    margin: 0 38px 38px 0;
+    position: relative;
+    width: 170px;
+}
+
+.trade-view-mode-teaser .trade-product-view-inner {
+    position: relative;
+    display: block;
+    margin: 5px;
+}
+
+.trade-view-mode-teaser .trade-product-view-inside:hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: -10px -10px -10px -10px;
+    z-index: 999;
+    padding: 10px 10px 10px 10px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+    border-radius: 5px;
+    background-color: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    -o-box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+.trade-view-mode-teaser .trade-product-view-inside .trade-product-view-hover-visible-wr {
+    display: none;
+}
+
+.trade-view-mode-teaser .trade-product-view-inside:hover .trade-product-view-hover-visible-wr {
+    display: block;
+}
+
+.trade-product-full-table {
+}
+
+.trade-product-full-table-row-cell {
+    width: 50%;
+}
+
+.trade-product-full-table .trade-one-cell {
+}
+
+.trade-product-full-table .trade-one-cell .trade-full-cell-inner {
+    padding-right: 5%;
+}
+
+.trade-product-full-table .trade-two-cell .trade-full-cell-inner {
+    padding-left: 5%;
+}
+
+.trade-two-row > .trade-cell-inner {
+    margin-top: 1.8rem;
+}
+
+.trade-product-full-grid {
+    background: yellow;
+}
+
+.trade-grid-row {
+    background: white;
+}
+
+.trade-grid-cell {
+    vertical-align: top;
+}
+
+.trade-two-row .trade-grid-cell {
+    width: 50%;
+    display: inline-block;
+}
+
+.trade-ajax-loading-message {
+    min-height: 217px;
+    width: 100% !important;
+    color: green;
+}
+
+.trade-product-service .trade-grid-row .trade-grid-cell {
+    width: auto;
+    display: block;
+}
+
+.trade-numeric-slider-form-item {
+    margin-bottom: 1rem;
+}
+
+.qtip-content p {
+    margin-bottom: 0;
+}
+
+{
+    display: block
+;
+    width: 100%
+;
+}
+
+.trade-container-cell {
+    float: left;
+}
+
+.trade-container-row .trade-container-cell {
+    width: 50%;
+}
+
+.trade-container-row.trade-4-cell-row .trade-container-cell {
+    width: 25%;
+}
+
+.trade-container-inner {
+    padding: .5em;
+}
+
+.group-left-side-first-row.field-group-div.trade-container-cell .trade-container-inner,
+.group-left-side-second-row.field-group-div.trade-container-cell .trade-container-inner {
+    margin: 0 1em 0 0;
+}
+
+.group-right-side-first-row.field-group-div.trade-container-cell .trade-container-inner,
+.group-right-side-second-row.field-group-div.trade-container-cell .trade-container-inner {
+    margin: 0 0 0 1em;
+}
+
+.trade-product-price {
+    font-weight: bold;
+    font-size: 2.6rem;
+    line-height: 1.6em;
+}
+
+.trade-extra-field {
+    padding: .5em 0;
+}
+
+.trade-product .field {
+    display: block;
+    width: 100%;
+}
+
+.trade-product .field .field-items,
+.trade-product .field .field__items {
+    display: block;
+    width: 100%;
+}
+
+.trade-product .field .field-label,
+.trade-product .field .field__label {
+    float: left;
+    padding-right: .5em;
+}
+
+.trade-view-mode-teaser .trade-product-add-to-order-actions {
+    display: inline-block;
+}
+
+.trade-view-mode-teaser .trade-spinner-container {
+    display: inline-block;
+}
+
+.trade-view-mode-teaser .trade-product-add-to-order .form-type-select {
+    position: absolute !important;
+    clip: rect(1px 1px 1px 1px);
+    clip: rect(1px, 1px, 1px, 1px);
+    overflow: hidden;
+    height: 1px;
+}
+
+.trade-product-color-picker-option:hover, .trade-product-picker-option:hover {
+    cursor: pointer;
+}
