@@ -35,7 +35,7 @@
     <link rel="icon" sizes="any" mask href="https://assets-cdn.github.com/pinned-octocat.svg">
     <meta name="theme-color" content="#4078c0">
     <link rel="icon" type="image/x-icon" href="https://assets-cdn.github.com/favicon.ico">
-    <!-- </textarea> --><!-- '"` --><meta content="authenticity_token" name="csrf-param" />
+    <meta content="authenticity_token" name="csrf-param" />
     <meta content="I33r7p7/pqcnO2dT3BHGSehMxtwLa5I/UZGLvgHvS5dhuAWZ5hKDc0C5NTqWujdZD6NG0i/BszBsRJvUQPfPow==" name="csrf-token" />
     <link crossorigin="anonymous" href="https://assets-cdn.github.com/assets/github/index-17ad0ea72cb80a46ba6d1bd6e3c69789acb0e1c0cae43beb90477759cce1bdfd.css" media="all" rel="stylesheet" />
     <link crossorigin="anonymous" href="https://assets-cdn.github.com/assets/github2/index-9f11074052a3551cd7bae2fba8b949844d2d7329927a7f1cb5a2c2a821f016e0.css" media="all" rel="stylesheet" />
