@@ -61,6 +61,9 @@ a.trade-catalog-remove-link {
 .trade-catalog-filters .form-item.form-type-checkboxes .form-item {
     margin-top: 0;
     margin-bottom: 0;
+    height: 1.8em;
+    overflow: hidden;
+    position: relative;
 }
 
 .trade-catalog-filters .trade-actions input.form-submit {
@@ -123,9 +126,9 @@ a.trade-catalog-remove-link {
 }
 
 .one-sidebar .trade-catalog-item-list .trade-catalog-terms-list.trade-catalog-item-list-inner > div {
-    max-width: 25%;
+    max-width: 24.5%;
     min-width: 200px;
-    width: 25%;
+    width: 24.5%;
 }
 
 .trade-catalog-item-list .trade-catalog-terms-list.trade-catalog-item-list-inner .trade-catalog-item-list-inner > div {
@@ -145,4 +148,47 @@ a.trade-catalog-remove-link {
 
 .trade-catalog-terms-list.trade-catalog-item-list-inner .trade-catalog-item-list {
     padding: 0 15px 15px 0;
+}
+
+.trade-catalog-filters .form-item .description, .rtl .trade-catalog-filters .form-item .description {
+    text-transform: lowercase;
+    position: absolute;
+    right: 0;
+    top: 3px;
+}
+
+.rtl .trade-catalog-filters .form-item .description {
+    left: 0;
+    right: auto;
+}
+
+.trade-catalog-gradient, .trade-catalog-filters .form-item .description a.trade-catalog-link {
+    display: inline-block;
+    vertical-align: top;
+    height: 1.8em;
+}
+
+.trade-catalog-gradient {
+    width: 20px;
+    background: -webkit-linear-gradient(left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 70%);
+    background: -moz-linear-gradient(left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 70%);
+    background: -o-linear-gradient(left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 70%);
+    background: linear-gradient(left, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 70%);
+}
+
+.rtl .trade-catalog-gradient {
+    background: -webkit-linear-gradient(right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 70%);
+    background: -moz-linear-gradient(right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 70%);
+    background: -o-linear-gradient(right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 70%);
+    background: linear-gradient(right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1) 70%);
+}
+
+.trade-catalog-filters .form-item .description a.trade-catalog-link {
+    background-color: #fff;
+}
+
+.trade-catalog-pages-custom-cpp-wr{
+    padding-bottom:1em;
+    border-bottom: 1px dotted #ccc;
+    margin-bottom:1em;
 }

@@ -21,8 +21,3 @@
     display: inline-block;
     max-width: 20%;
 }
-
-.trade-catalog-filters .form-item .description {
-    text-transform: lowercase;
-}
-

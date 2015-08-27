@@ -14,6 +14,7 @@ function theme_trade_catalog_pages_catalog_page($vars) {
 }
 
 function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
+
   //include css
   $m_path = drupal_get_path('module', 'trade_catalog');
   drupal_add_css($m_path . '/css/trade_catalog.css');
@@ -51,6 +52,10 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
   }
 
   if (!empty($term)) {
+    if (module_exists('i18n_taxonomy')) {
+      $term->name = i18n_taxonomy_term_name($term);
+    }
+
     $title = $term->name;
     $catalog_voc = taxonomy_vocabulary_load($term->vid);
   }
@@ -79,6 +84,7 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
 
   //add children terms block
   if (empty($_GET['search'])) {
+
     if (variable_get('trade_product_catalog_page_terms_block_en', FALSE)) {
       $build['#prefix'] = theme('trade_catalog_terms_block', array(
           'options' => array(
@@ -88,6 +94,47 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
         )
       );
     }
+
+    // term descriptions
+
+    $build_element = array();
+    $element = array();
+    $l_query = array(
+      'query' => array('destination' => current_path()),
+    );
+    // $field_description_items = field_get_items('taxonomy_term', $term, 'field_description_footer');
+    if (!empty($term) && module_exists('i18n_taxonomy')) {
+      $term_description = i18n_taxonomy_term_description($term);
+    }
+    else {
+      $term_description = !empty($term->description) ? $term->description : '';
+    }
+    if (!empty($term->description)) {
+      $build_element['inner'] = array(
+        '#markup' => $term_description,
+        '#weight' => 1,
+      );
+
+    }
+
+    if (!empty($term) && taxonomy_term_edit_access($term) && isset($term->description)) {
+      $build_element['edit_link'] = array(
+        '#prefix' => '<div class="trade-edit-link-wr">',
+        '#suffix' => '</div>',
+        '#markup' => l(t('Edit'), "taxonomy/term/{$term->tid}/edit", $l_query + array('attributes' => array('class' => array('trade-edit-link')))),
+        '#weight' => -1,
+      );
+    }
+    if (!empty($build_element)) {
+      $trade_catalog_term_description_exists = TRUE;
+      $element['description'] = array(
+        '#prefix' => '<div class="trade-catalog-term-description">',
+        '#suffix' => '</div>',
+      );
+      $element['description']['element'] = $build_element;
+      $build['#suffix'] = render($element);
+    }
+
   }
   else {
     $build['#prefix'] = theme('trade_catalog_search_block');
@@ -123,7 +170,7 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
       );
 
     }
-    if (taxonomy_term_edit_access($term)) {
+    if (!empty($term) && taxonomy_term_edit_access($term) && isset($term->field_description_header)) {
 
       $build_element['edit_link'] = array(
         '#prefix' => '<div class="trade-edit-link-wr">',
@@ -141,7 +188,7 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
       $build['description_header'] += $build_element;
     }
 
-    // description header
+    // description footer
     $build_element = array();
     $field_description_items = field_get_items('taxonomy_term', $term, 'field_description_footer');
     if (!empty($field_description_items[0]['value'])) {
@@ -151,27 +198,31 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
       );
 
     }
-
-    if (taxonomy_term_edit_access($term)) {
-      $build_element['edit_link'] = array(
-        '#prefix' => '<div class="trade-edit-link-wr">',
-        '#suffix' => '</div>',
-        '#markup' => l(t('Edit'), "taxonomy/term/{$term->tid}/edit", $l_query + array('attributes' => array('class' => array('trade-edit-link')))),
-        '#weight' => -1,
-      );
-    }
-    if (!empty($build_element)) {
-      $build['description_footer'] = array(
-        '#prefix' => '<div class="trade-catalog-term-description-footer">',
-        '#suffix' => '</div>',
-        '#weight' => 10,
-      );
-      $build['description_footer'] += $build_element;
+    if (empty($trade_catalog_term_description_exists)) {
+      if (!empty($term) && taxonomy_term_edit_access($term) && isset($term->field_description_footer)) {
+        $build_element['edit_link'] = array(
+          '#prefix' => '<div class="trade-edit-link-wr">',
+          '#suffix' => '</div>',
+          '#markup' => l(t('Edit'), "taxonomy/term/{$term->tid}/edit", $l_query + array('attributes' => array('class' => array('trade-edit-link')))),
+          '#weight' => -1,
+        );
+      }
+      if (!empty($build_element)) {
+        $build['description_footer'] = array(
+          '#prefix' => '<div class="trade-catalog-term-description-footer">',
+          '#suffix' => '</div>',
+          '#weight' => 10,
+        );
+        $build['description_footer'] += $build_element;
+      }
     }
   }
   else {
     //catalog
-    $breadcrumb = array(l($catalog_voc->name, TRADE_CATALOG_CATALOG_PAGE), l(t('Home'), NULL));
+    $breadcrumb = array(
+      l($catalog_voc->name, TRADE_CATALOG_CATALOG_PAGE),
+      l(t('Home'), NULL)
+    );
   }
 
   $build['wr'] = array(
@@ -205,11 +256,14 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
 // term & children on term page
   if (!empty($term->tid)) {
     $catalog_terms = array($term->tid => $term);
-    $tree = taxonomy_get_tree($term->vid, $term->tid);
 
-    if (!empty($tree)) {
-      foreach ($tree as $key => $tree_term) {
-        $catalog_terms[$tree_term->tid] = $tree_term;
+    if (!variable_get('trade_product_catalog_select_product_current_term', FALSE)) {
+      $tree = taxonomy_get_tree($term->vid, $term->tid);
+
+      if (!empty($tree)) {
+        foreach ($tree as $key => $tree_term) {
+          $catalog_terms[$tree_term->tid] = $tree_term;
+        }
       }
     }
   }
@@ -222,7 +276,11 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
     foreach ($sort_fields as $sort_fields_data) {
       if ($sort_fields_data['name'] == trim($_GET['sort'])) {
         $sort['field'] = $sort_fields_data['name'];
-        if (!empty($_GET['direction']) && in_array($_GET['direction'], array('asc', 'desc'), TRUE)) {
+        if (!empty($_GET['direction']) && in_array($_GET['direction'], array(
+            'asc',
+            'desc'
+          ), TRUE)
+        ) {
           $sort['direction'] = $_GET['direction'];
         }
         else {
@@ -252,11 +310,45 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
   $query_content = _trade_catalog_get_nodes_query($types, $filters_fields, $catalog_field, $catalog_terms, $filters_values, TRUE, $sort, $search);
   $count_on_page = variable_get('trade_product_catalog_page_count_nodes', 0);
 
+  //commerce price update
+  if (module_exists('commerce') && module_exists('custom_ccp') && (user_access('administer site configuration') || user_access('product price update'))) {
+    $query_content_all = clone $query_content;
+    $nids_all = $query_content_all->execute()->fetchCol();
+    if (!empty($nids_all)) {
+      $nids_all = array_unique($nids_all);
+      $build['custom_ccp'] = array(
+        '#type' => 'container',
+        '#weight' => -11,
+        '#attributes' => array(
+          'class' => array('trade-catalog-pages-custom-cpp-wr')
+        ),
+        'title' => array(
+          '#type' => 'html_tag',
+          '#tag' => 'label',
+          '#value' => t('Change product price')
+        ),
+        'count' => array(
+          '#type' => 'item',
+          '#title' => t('Selected products count') . ' = ',
+          'num' => array('#markup' => count($nids_all)),
+        ),
+        'inner' => array(drupal_get_form('trade_catalog_custom_cpp_form', $nids_all))
+      );
+    }
+  }
+
+
   if (!empty($count_on_page)) {
-    $nids = $query_content->extend('PagerDefault')->element(1)->limit($count_on_page)->execute()->fetchCol();
+    $nids = $query_content->extend('PagerDefault')
+      ->limit($count_on_page)
+      ->execute()
+      ->fetchCol();
   }
   elseif ($current_path == TRADE_CATALOG_CATALOG_PAGE) {
-    $nids = $query_content->extend('PagerDefault')->element(1)->limit(100)->execute()->fetchCol();
+    $nids = $query_content->extend('PagerDefault')
+      ->limit(100)
+      ->execute()
+      ->fetchCol();
   }
   else {
     $nids = $query_content->execute()->fetchCol();
@@ -330,6 +422,7 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
     );
 
     if (module_exists('trade')) {
+
       //with product cache
       $build['wr']['content'] += _trade_node_view_multiple($nodes);
     }
@@ -342,17 +435,28 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
     if (!empty($count_on_page) || $current_path == TRADE_CATALOG_CATALOG_PAGE) {
       $build['wr']['pager'] = array(
         '#theme' => 'pager',
-        '#element' => 1,
         '#weight' => 3,
       );
     }
   }
   else {
-    $build['wr']['content']['empty'] = array(
-      '#prefix' => '<p>',
-      '#markup' => t('Product not found. Please, change or clear filers.'),
-      '#suffix' => '</p>',
+    if (isset($build['#suffix'])) {
+      $suffix = $build['#suffix'];
+    }
+    else {
+      $suffix = '';
+    }
+    $build = array(
+      '#prefix' => '<div class="trade-catalog-page-only-terms-wr">',
+      '#markup' => $build['#prefix'],
+      '#suffix' => '</div>' . $suffix,
     );
+    // unset($build['description_header'],$build['description_footer'], $build['wr']);
+//    $build['wr']['content']['empty'] = array(
+//      '#prefix' => '<p>',
+//      '#markup' => t('Product not found. Please, change or clear filers.'),
+//      '#suffix' => '</p>',
+//    );
   }
 
   $vars['build'] = $build;
@@ -397,7 +501,10 @@ function trade_catalog_search_form_submit($form, &$form_state) {
       $query = $_GET;
       unset($query['q']);
       $query['search'] = $text;
-      $form_state['redirect'] = array(TRADE_CATALOG_CATALOG_PAGE, array('query' => $query));
+      $form_state['redirect'] = array(
+        TRADE_CATALOG_CATALOG_PAGE,
+        array('query' => $query)
+      );
     }
   }
 }
@@ -445,6 +552,9 @@ function trade_catalog_process_checkboxes($element) {
         '#ajax' => isset($element['#ajax']) ? $element['#ajax'] : NULL,
         '#weight' => $weight,
       );
+
+      $element[$key]['#attributes']['title'] = $choice;
+
       if (!empty($element['#custom_bfe']['#options'][$key]['#attributes'])) {
         $element[$key]['#attributes'] = array_merge($element[$key]['#attributes'], $element['#custom_bfe']['#options'][$key]['#attributes']);
       }
@@ -494,15 +604,25 @@ function trade_catalog_process_checkboxes($element) {
           if (!empty($show_link_use)) {
             $link_options = array(
               'html' => TRUE,
-              'attributes' => array('class' => array('trade-catalog-show-link')),
+              'attributes' => array(
+                'class' => array(
+                  'trade-catalog-link',
+                  'trade-catalog-show-link'
+                )
+              ),
             );
-            $element[$key]['#description'] = l(t('Show: @count', array('@count' => $element['#custom_bfe']['#options'][$key]['#count'])), $link_href, $link_options);
+            $element[$key]['#description'] = '<span class="trade-catalog-gradient"></span>' . l(t('Show: @count', array('@count' => $element['#custom_bfe']['#options'][$key]['#count'])), $link_href, $link_options);
           }
           else {
             $link_options = array(
-              'attributes' => array('class' => array('trade-catalog-remove-link')),
+              'attributes' => array(
+                'class' => array(
+                  'trade-catalog-link',
+                  'trade-catalog-remove-link'
+                )
+              ),
             );
-            $element[$key]['#description'] = l(t('Remove: @count', array('@count' => $element['#custom_bfe']['#options'][$key]['#count'])), $link_href, $link_options);
+            $element[$key]['#description'] = '<span class="trade-catalog-gradient"></span>' . l(t('Remove: @count', array('@count' => $element['#custom_bfe']['#options'][$key]['#count'])), $link_href, $link_options);
           }
 
         }
@@ -566,8 +686,8 @@ function _trade_catalog_get_nodes_query($types = array(), $fields = array(), $ca
     ->condition('n.status', 1)
     ->condition('n.type', $types, 'IN')
     ->condition(db_or()
-        ->condition('n.language', $language->language)
-        ->condition('n.language', 'NONE')
+      ->condition('n.language', $language->language)
+      ->condition('n.language', 'NONE')
     )
     ->fields('n');
 
@@ -590,15 +710,15 @@ function _trade_catalog_get_nodes_query($types = array(), $fields = array(), $ca
       $query->leftJoin($field_table_sku, $field_table_sku, "{$field_table_sku}.product_id = {$field_table_product_search}.{$field_value_product_search}");
 
       $query->condition(db_or()
-          ->condition("{$body_field}.{$body_field_value}", '%' . $search . '%', 'LIKE')
-          ->condition('n.title', '%' . $search . '%', 'LIKE')
-          ->condition("{$field_table_sku}.{$field_value_sku}", '%' . $search . '%', 'LIKE')
+        ->condition("{$body_field}.{$body_field_value}", '%' . $search . '%', 'LIKE')
+        ->condition('n.title', '%' . $search . '%', 'LIKE')
+        ->condition("{$field_table_sku}.{$field_value_sku}", '%' . $search . '%', 'LIKE')
       );
     }
     else {
       $query->condition(db_or()
-          ->condition("{$body_field}.{$body_field_value}", '%' . $search . '%', 'LIKE')
-          ->condition('n.title', '%' . $search . '%', 'LIKE')
+        ->condition("{$body_field}.{$body_field_value}", '%' . $search . '%', 'LIKE')
+        ->condition('n.title', '%' . $search . '%', 'LIKE')
       );
     }
   }
@@ -960,7 +1080,7 @@ function _trade_catalog_get_filters_plain_from_filters_values($values, $mode = 1
 }
 
 function _trade_catalog_get_filters() {
-  $filters_fields = & drupal_static(__FUNCTION__);
+  $filters_fields = &drupal_static(__FUNCTION__);
   $field_info_fields = field_info_fields();
 
   if (!isset($filters_fields)) {
@@ -1013,6 +1133,8 @@ function trade_catalog_filter_form($form, &$form_state, $fields_values = array()
   $field_info_fields = field_info_fields();
   $filter_fields = _trade_catalog_get_filters();
 
+  $field_info_field_map = field_info_field_map();
+
   $field_price_key = '';
   if (module_exists('trade')) {
     $field_price_key = 'price';
@@ -1057,11 +1179,27 @@ function trade_catalog_filter_form($form, &$form_state, $fields_values = array()
         }
 
         $options = array_intersect_key($options, $values);
+        $field_instance = array();
+        $field_label = '';
+        if (!empty($field_info_field_map[$field_name]['bundles']['node'][0])) {
+          $field_instance = field_info_instance('node', $field_name, $field_info_field_map[$field_name]['bundles']['node'][0]);
+          $field_label = $field_instance['label'];
+          if (function_exists('i18n_string_object_translate')) {
+            $field_instance_translate = i18n_string_object_translate('field_instance', $field_instance);
+            if (!empty($field_instance_translate['label'])) {
+              $field_label = $field_instance_translate['label'];
+            }
+          }
+        }
+
         $form[$field_name] = array(
           '#type' => 'checkboxes',
-          '#title' => $voc_name,
+          '#title' => !empty($field_label) ? $field_label : $voc_name,
           '#options' => $options,
-          '#process' => array('form_process_checkboxes', 'trade_catalog_process_checkboxes'),
+          '#process' => array(
+            'form_process_checkboxes',
+            'trade_catalog_process_checkboxes'
+          ),
         );
         if (!empty($filters_values[$field_name])) {
           $form[$field_name]['#default_value'] = $filters_values[$field_name];
@@ -1131,7 +1269,10 @@ function trade_catalog_filter_form($form, &$form_state, $fields_values = array()
               '#attributes' => array('class' => array('trade-field-title')),
             ),
             '#attributes' => array(
-              'class' => array('trade-' . $data_field . '-form-item', 'trade-numeric-slider-form-item'),
+              'class' => array(
+                'trade-' . $data_field . '-form-item',
+                'trade-numeric-slider-form-item'
+              ),
               'data-field' => $data_field,
             ),
             '#attached' => array(
@@ -1309,7 +1450,10 @@ function trade_catalog_filter_form($form, &$form_state, $fields_values = array()
                 '#attributes' => array('class' => array('trade-field-title')),
               ),
               '#attributes' => array(
-                'class' => array('trade-' . $field_name_single_uri . '-form-item', 'trade-numeric-slider-form-item'),
+                'class' => array(
+                  'trade-' . $field_name_single_uri . '-form-item',
+                  'trade-numeric-slider-form-item'
+                ),
                 'data-field' => $field_name_single_uri,
               ),
               '#attached' => array(
@@ -1469,7 +1613,10 @@ function trade_catalog_filter_form($form, &$form_state, $fields_values = array()
             '#type' => 'checkboxes',
             '#title' => $element_title,
             '#options' => $options,
-            '#process' => array('form_process_checkboxes', 'trade_catalog_process_checkboxes'),
+            '#process' => array(
+              'form_process_checkboxes',
+              'trade_catalog_process_checkboxes'
+            ),
           );
           if (!empty($filters_values[$field_name])) {
             $form[$field_name]['#default_value'] = $filters_values[$field_name];
@@ -1600,12 +1747,6 @@ function template_preprocess_trade_catalog_terms_block(&$vars) {
     }
   }
 
-  $vars['build'] = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array('trade-catalog-terms'),
-    ),
-  );
 
   if ($items && $tids) {
     $view_mode = variable_get('trade_product_catalog_tree_view_mode', 'default');
@@ -1625,14 +1766,17 @@ function template_preprocess_trade_catalog_terms_block(&$vars) {
       }
     }
 
-    $vars['build']['content'] = array(
-      '#theme' => 'trade_catalog_item_list',
-      '#items' => $items,
-      '#attributes' => array('class' => array('trade-catalog-terms-list'))
+    $vars['build'] = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('trade-catalog-terms'),
+      ),
+      'content' => array(
+        '#theme' => 'trade_catalog_item_list',
+        '#items' => $items,
+        '#attributes' => array('class' => array('trade-catalog-terms-list'))
+      ),
     );
-  }
-  else {
-    $vars['build']['content'] = array('#markup' => 'Catalog terms not found');
   }
 }
 
@@ -1729,7 +1873,9 @@ function template_preprocess_catalog_filters_block(&$vars) {
           '#type' => 'container',
           '#attributes' => array(
             'class' => array('trade-catalog-filters'),
-
+          ),
+          '#attached' => array(
+            'js' => array(drupal_get_path('module', 'trade_catalog') . '/js/trade_catalog_filter.js')
           ),
         );
 
@@ -1737,14 +1883,16 @@ function template_preprocess_catalog_filters_block(&$vars) {
         $filters_values = _trade_catalog_get_filters_values();
 
         $fields_enable_values_query = _trade_catalog_get_nodes_query($types, $filters_fields, $catalog_field, $vars['options']['catalog_terms'], $filters_values);
-        $fields_enable_values_nodes = $fields_enable_values_query->execute()->fetchAll();
+        $fields_enable_values_nodes = $fields_enable_values_query->execute()
+          ->fetchAll();
 
         $fields_enable_values = array();
         if (!empty($fields_enable_values_nodes)) {
           $fields_enable_values = _trade_catalog_get_fields_values_from_nodes($fields_enable_values_nodes, TRUE);
         }
+        $form_var = drupal_get_form('trade_catalog_filter_form', $fields_values, $filters_values, $fields_enable_values);
         $vars['build']['filter_form'] = array(
-          '#markup' => drupal_render(drupal_get_form('trade_catalog_filter_form', $fields_values, $filters_values, $fields_enable_values)),
+          '#markup' => drupal_render($form_var),
         );
       }
     }
@@ -1760,7 +1908,11 @@ function _trade_catalog_get_filters_values() {
   $curr_path = current_path();
   $start_filters = strpos($curr_path, '/filters/');
   if (!empty($start_filters)) {
-    $filters_str = drupal_substr($curr_path, ($start_filters + drupal_strlen('/filters/')));
+    // $filters_str = drupal_substr($curr_path, ($start_filters + drupal_strlen('/filters/')));
+    $filters_str_ex = explode('/filters/', $curr_path);
+    if (!empty($filters_str_ex[1])) {
+      $filters_str = $filters_str_ex[1];
+    }
     if (!empty($filters_str)) {
       $filters_arr = explode('/', $filters_str);
       if (!empty($filters_arr)) {
@@ -1832,4 +1984,97 @@ function _trade_catalog_get_fields_values_from_nodes($nodes = array(), $with_cou
   }
 
   return $fields_values;
+}
+
+function trade_catalog_custom_cpp_form($form, &$form_state, $nids = array()) {
+  $form = array();
+  $form['wr'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('container-inline'),
+    ),
+  );
+  $form['nids'] = array(
+    '#type' => 'hidden',
+    '#value' => serialize($nids),
+  );
+  $form['wr']['op_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Operation type'),
+    '#default_value' => 'multiple',
+    '#options' => array(
+      'set' => '=',
+      'multiple' => '*',
+      'plus' => '+',
+      'minus' => '-'
+    ),
+  );
+  $form['wr']['int_part'] = array(
+    '#type' => 'textfield',
+    '#size' => 8,
+    '#maxlength' => 8,
+    '#title' => 'Integer part',
+    '#title_display' => 'invisible',
+    '#default_value' => '1',
+    '#element_validate' => array('element_validate_number')
+  );
+
+  $form['wr']['sep'] = array(
+    '#markup' => '.',
+  );
+
+  $form['wr']['dd_part'] = array(
+    '#type' => 'textfield',
+    '#size' => 2,
+    '#maxlength' => 2,
+    '#default_value' => '00',
+    '#title' => 'Digital part',
+    '#title_display' => 'invisible',
+    '#element_validate' => array('element_validate_number')
+  );
+
+  //$precision
+  //The optional number of decimal digits to round to
+  $form['wr']['op_precision'] = array(
+    '#type' => 'select',
+    '#title' => t('Operation precision'),
+    '#default_value' => 'multiple',
+    '#default_value' => '0',
+    '#options' => array('0' => '0', '1' => '1', '2' => '2'),
+  );
+  $form['wr']['change'] = array(
+    '#type' => 'submit',
+    '#value' => 'Update',
+  );
+  return $form;
+}
+
+function trade_catalog_custom_cpp_form_validate($form, $form_state) {
+  if (empty($form_state['values']['int_part']) && empty($form_state['values']['dd_part'])) {
+    form_set_error('int_part', t('Enter integer number'));
+    form_set_error('dd_part');
+  }
+}
+
+function trade_catalog_custom_cpp_form_submit($form, &$form_state) {
+  global $language;
+  if ($nids = unserialize($form_state['values']['nids'])) {
+    $_SESSION['http_request_count'] = 0;
+
+    $cont = array(
+      'op_type',
+      'int_part',
+      'dd_part',
+      'op_precision'
+    );
+    $cont = array_intersect_key($form_state['values'], array_combine($cont, $cont));
+
+    $batch = _trade_catalog_custom_cpp_batch($nids, $cont);
+    batch_set($batch);
+  }
+
+  else {
+    $mes = ('Field for external code not found. Import not start.');
+    drupal_set_message($mes);
+  }
 }

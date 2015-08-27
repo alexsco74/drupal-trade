@@ -123,17 +123,25 @@ function trade_catalog_admin_config_catalog_form() {
     '#default_value' => variable_get('trade_product_catalog_page_terms_block_en', FALSE),
   );
 
+  $form['trade_product_catalog_select_product_current_term'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Catalog page select product only current term'),
+    '#default_value' => variable_get('trade_product_catalog_select_product_current_term', FALSE),
+  );
+
   //view modes
   if ($catalog_field = variable_get('trade_product_catalog_field', 'field_product_catalog')) {
     $field_info = field_info_field($catalog_field);
     if (!empty($field_info['settings']['allowed_values'][0]['vocabulary'])) {
       $view_modes_options = _trade_catalog_get_view_modes_custom_options('taxonomy_term', $field_info['settings']['allowed_values'][0]['vocabulary']);
-      $form['trade_product_catalog_tree_view_mode'] = array(
-        '#type' => 'select',
-        '#title' => t('Catalog tree term view mode'),
-        '#default_value' => variable_get('trade_product_catalog_tree_view_mode', 'default'),
-        '#options' => $view_modes_options,
-      );
+      if(!empty($view_modes_options)) {
+        $form['trade_product_catalog_tree_view_mode'] = array(
+          '#type' => 'select',
+          '#title' => t('Catalog tree term view mode'),
+          '#default_value' => variable_get('trade_product_catalog_tree_view_mode', 'default'),
+          '#options' => $view_modes_options,
+        );
+      }
     }
   }
 

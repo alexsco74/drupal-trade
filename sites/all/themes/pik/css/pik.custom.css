@@ -1111,7 +1111,7 @@ div.panel-pane div.node.trade-view-mode-collections_elements {
 }
 
 .trade-catalog-filters {
-    background-color: #ceeff6;
+    background-color: #fff;
     -webkit-border-radius: 10px;
     -moz-border-radius: 10px;
     -o-border-radius: 10px;
@@ -1160,7 +1160,7 @@ div.panel-pane div.node.trade-view-mode-collections_elements {
     -moz-border-radius: 12px;
     -o-border-radius: 12px;
     border-radius: 12px;
-    border: none;
+    border: 1px solid #ccc;
 }
 
 .ui-slider .ui-slider-handle {
@@ -1650,14 +1650,29 @@ h1.site-name {
 
 .ajax-progress {
     position: absolute;
-    margin-left:-20px;
+    margin-left: -20px;
 }
 
 .rtl .ajax-progress {
     position: absolute;
-    margin-right:-20px;
+    margin-right: -20px;
 }
 
 .ajax-progress .message {
     display: none;
+}
+
+.trade-catalog-filters .form-item .description, .rtl .trade-catalog-filters .form-item .description {
+    top: 0;
+    margin-top: 0;
+}
+
+.trade-catalog-gradient, .trade-catalog-filters .form-item .description a.trade-catalog-link {
+    display: inline-block;
+    height: 20px;
+    line-height: 20px;
+}
+
+.form-item.form-type-checkbox label {
+    line-height: 20px;
 }

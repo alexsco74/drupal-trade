@@ -245,7 +245,12 @@ function template_preprocess_trade_catalog_taxonomy_term(&$variables) {
 function trade_catalog_block_view_alter(&$data, $block) {
   if ($block->delta == 'menu-catalog') {
     drupal_add_js(drupal_get_path('module', 'trade_catalog') . '/js/trade_catalog_tree.js');
-    $js_settings = array('trade' => array('open' => t('turn up'), 'close' => t('shut up')));
+    $js_settings = array(
+      'trade' => array(
+        'open' => t('turn up'),
+        'close' => t('shut up')
+      )
+    );
     drupal_add_js($js_settings, array('type' => 'setting'));
   }
 }
@@ -273,20 +278,17 @@ function _trade_catalog_sort_fields_elements($enable = 'all') {
     }
   }
 
-  if ($enable !== 1) {
-    foreach (array_diff_key($trade_catalog_product_fields, $sort_fields_names) as $name => $title) {
-      $i++;
-      $sort_fields_elements[$i] = array(
-        'name' => $name,
-        'title' => $title,
-        'enable' => FALSE,
-        'default' => FALSE,
-        'direction' => 'asc',
-        'weight' => $i,
-      );
-    }
+  foreach (array_diff_key($trade_catalog_product_fields, $sort_fields_names) as $name => $title) {
+    $i++;
+    $sort_fields_elements[$i] = array(
+      'name' => $name,
+      'title' => $title,
+      'enable' => FALSE,
+      'default' => FALSE,
+      'direction' => 'asc',
+      'weight' => $i,
+    );
   }
-
   return $sort_fields_elements;
 }
 
@@ -330,12 +332,17 @@ function _trade_catalog_filter_value2get_value($filter_value = '') {
 }
 
 function _trade_catalog_term_load($tid) {
+
   if (is_string($tid)) {
     if (!empty($tid)) {
-      $filter_start = strpos($tid, '/filter');
-      if ($filter_start) {
-        $tid = drupal_substr($tid, 0, $filter_start);
+
+      if (strpos($tid, '/filter')) {
+        $term_alias_ex = explode('/filter', $tid);
+        if (!empty($term_alias_ex[0])) {
+          $tid = $term_alias_ex[0];
+        }
       }
+
       $term_alias_ar = explode('/', $tid);
       if (!empty($term_alias_ar[0]) && $term_alias_ar[0] == TRADE_CATALOG_CATALOG_PAGE) {
         array_shift($term_alias_ar);
@@ -523,6 +530,7 @@ function trade_catalog_block_view($delta = '') {
     case 'catalog_filters':
       if (user_access('access content')) {
         $term = menu_get_object('taxonomy_term', 2);
+
         if (empty($term)) {
           $term = _trade_catalog_term_load(current_path());
         }
@@ -533,19 +541,24 @@ function trade_catalog_block_view($delta = '') {
           // term & children on term page
           if (!empty($term->tid)) {
             $catalog_terms = array($term->tid => $term);
-            $tree = taxonomy_get_tree($term->vid, $term->tid);
 
-            if (!empty($tree)) {
-              foreach ($tree as $key => $tree_term) {
-                $catalog_terms[$tree_term->tid] = $tree_term;
+            if (!variable_get('trade_product_catalog_select_product_current_term', FALSE)) {
+              $tree = taxonomy_get_tree($term->vid, $term->tid);
+
+              if (!empty($tree)) {
+                foreach ($tree as $key => $tree_term) {
+                  $catalog_terms[$tree_term->tid] = $tree_term;
+                }
               }
             }
           }
 
-          $block['content'] = array(
+          $catalog_filters_block = array(
             '#theme' => 'catalog_filters_block',
             '#options' => array('catalog_terms' => $catalog_terms),
           );
+
+          $block['content'] = render($catalog_filters_block);
         }
       }
       break;
@@ -579,4 +592,117 @@ function _trade_catalog_get_field_instances($entity_type = 'node', $bundle_name 
 
 function _trade_catalog_filters_sort($a, $b) {
   return $a['weight'] < $b['weight'] ? -1 : ($a['weight'] > $b['weight'] ? 1 : ($a['title'] < $b['title'] ? -1 : 1));
+}
+
+function _trade_catalog_custom_cpp_batch($nids = array(), $cont = array()) {
+
+  $count_nids = count($nids);
+  $mes = t('Change price for @num products', array('@num' => $count_nids));
+  drupal_set_message($mes);
+
+  $operations = array();
+
+  //products load
+  if (TRUE) {
+    foreach ($nids as $i => $nid) {
+      if (TRUE) {
+        $operations[] = array(
+          '_trade_catalog_custom_cpp_batch_op',
+          array(
+            $nid,
+            $cont,
+            t('(Operation details - #@operation)', array('@operation' => $i)),
+          ),
+        );
+      }
+      else {
+        continue;
+      }
+    }
+    watchdog('trade_catalog', t('Product prices update complete'));
+  }
+  else {
+    $break_message = t('Product for price update not found.');
+    drupal_set_message($break_message);
+    return;
+  }
+  $batch = array(
+    'operations' => $operations,
+    'finished' => '_trade_catalog_custom_cpp_batch_finished',
+  );
+  return $batch;
+}
+
+function _trade_catalog_node_get_product_id($node = NULL) {
+  $product_id = 0;
+  $field_maps = field_info_field_map();
+  $product_items = array();
+  foreach ($field_maps as $field_name => $field_map) {
+    if ($field_map['type'] == 'commerce_product_reference') {
+      $product_items = field_get_items('node', $node, $field_name);
+      if(!empty($product_items[0]['product_id'])){
+        $product_id = $product_items[0]['product_id'];
+      }
+    }
+  }
+  return $product_id;
+}
+
+function _trade_catalog_custom_cpp_batch_op($nid, $cont, $operation_details, &$context) {
+  $price_update = FALSE;
+
+  $product_display = node_load($nid);
+  if($product_id = _trade_catalog_node_get_product_id($product_display)) {
+    if($product = commerce_product_load($product_id)) {
+      custom_ccp_calc_price($product, $cont);
+      $price_update = TRUE;
+    }
+  }
+
+  if ($price_update) {
+    $context['results'][] = t('Product price updated - @title', array('@title' => $product_display->title));
+  }
+
+// Optional message displayed under the progressbar.
+  $context['message'] = t('Update price for product id - "@id"', array('@id' => $nid)) . ' ' . $operation_details;
+
+  _trade_catalog_custom_cpp_batch_update_http_requests();
+}
+
+/**
+ * Utility function to increment HTTP requests in a session variable.
+ */
+function _trade_catalog_custom_cpp_batch_update_http_requests() {
+  $_SESSION['http_request_count']++;
+}
+
+function _trade_catalog_custom_cpp_batch_finished($success, $results, $operations) {
+  if ($success) {
+    // Here we could do something meaningful with the results.
+    // We just display the number of nodes we processed...
+
+    $res_mes = t('@count results processed in @requests HTTP requests.', array(
+      '@count' => count($results),
+      '@requests' => _trade_catalog_custom_cpp_batch_get_http_requests()
+    ));
+    drupal_set_message($res_mes);
+    $final_mes = t('The final result was "%final"', array('%final' => end($results)));
+    drupal_set_message($final_mes);
+  }
+  else {
+    // An error occurred.
+    // $operations contains the operations that remained unprocessed.
+    $error_operation = reset($operations);
+    $error_mes = t('An error occurred while processing @operation with arguments : @args',
+      array(
+        '@operation' => $error_operation[0],
+        '@args' => print_r($error_operation[0], TRUE),
+      )
+    );
+    drupal_set_message($error_mes);
+  }
+}
+
+function _trade_catalog_custom_cpp_batch_get_http_requests() {
+  return !empty($_SESSION['http_request_count']) ? $_SESSION['http_request_count'] : 0;
 }
