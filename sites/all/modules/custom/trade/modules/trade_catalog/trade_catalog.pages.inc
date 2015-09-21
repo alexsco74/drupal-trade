@@ -572,7 +572,8 @@ function trade_catalog_process_checkboxes($element) {
           $show_link_use = TRUE;
         }
         else {
-          // add value to filter
+
+// add value to filter
           $values_keys = array_combine($filters_values[$element['#name']], $filters_values[$element['#name']]);
           if (!isset($values_keys[$key])) {
             $new_filter_values = $filters_values;
@@ -580,12 +581,17 @@ function trade_catalog_process_checkboxes($element) {
             $show_link_use = TRUE;
           }
           else {
-            // remove value from filter
-            $filter_value_key = array_search($key, $filters_values[$element['#name']]);
 
+// remove value from filter
+            $filter_value_key = array_search($key, $filters_values[$element['#name']]);
             if ($filter_value_key !== FALSE) {
               $new_filter_values = $filters_values;
-              unset($new_filter_values[$element['#name']]);
+              foreach ($new_filter_values[$element['#name']] as $new_filter_values_key => &$new_filter_values_value) {
+                if ($new_filter_values_value == $key) {
+                  $new_filter_values_value = 0;
+                }
+              }
+              $new_filter_values[$element['#name']] = array_filter($new_filter_values[$element['#name']]);
               $remove_link_user = TRUE;
             }
           }
@@ -1879,17 +1885,77 @@ function template_preprocess_catalog_filters_block(&$vars) {
           ),
         );
 
-        // get filters values
+//        // get filters values
+//        $filters_values = _trade_catalog_get_filters_values();
+//
+//        $fields_enable_values_query = _trade_catalog_get_nodes_query($types, $filters_fields, $catalog_field, $vars['options']['catalog_terms'], $filters_values);
+//        $fields_enable_values_nodes = $fields_enable_values_query->execute()
+//          ->fetchAll();
+//
+//        $fields_enable_values = array();
+//        if (!empty($fields_enable_values_nodes)) {
+//          $fields_enable_values = _trade_catalog_get_fields_values_from_nodes($fields_enable_values_nodes, TRUE);
+//        }
+
+        //get filters values from url
         $filters_values = _trade_catalog_get_filters_values();
-
-        $fields_enable_values_query = _trade_catalog_get_nodes_query($types, $filters_fields, $catalog_field, $vars['options']['catalog_terms'], $filters_values);
-        $fields_enable_values_nodes = $fields_enable_values_query->execute()
-          ->fetchAll();
-
+        $filters_values_single = array();
+        $fields_enable_values_query_single = array();
         $fields_enable_values = array();
-        if (!empty($fields_enable_values_nodes)) {
-          $fields_enable_values = _trade_catalog_get_fields_values_from_nodes($fields_enable_values_nodes, TRUE);
+
+        //get filers enable values
+        foreach ($fields_values as $fields_values_key => $fields_values_value) {
+          $filter_url_search = array('_tid', '_value');
+          $filters_values_exclude = str_replace($filter_url_search, '', $fields_values_key);
+
+          $filters_values_wo = $filters_values;
+          unset($filters_values_wo[$filters_values_exclude]);
+
+          // $fields_enable_values_query = _trade_catalog_get_nodes_query($types, $filters_fields, $catalog_field, $vars['options']['catalog_terms'], $filters_values_wo);
+          $fields_enable_values_query_single[$fields_values_key] = _trade_catalog_get_nodes_query($types, $filters_fields, $catalog_field, $vars['options']['catalog_terms'], $filters_values_wo);
+          // $fields_enable_values_nodes = $fields_enable_values_query->execute()
+          //  ->fetchAll();
+
+          $fields_enable_values_nodes = $fields_enable_values_query_single[$fields_values_key]->execute()
+            ->fetchAll();
+
+          //get array count nodes on filters values
+          $fields_enable_values_single = array();
+          if (!empty($fields_enable_values_nodes)) {
+            $fields_enable_values_single = _trade_catalog_get_fields_values_from_nodes($fields_enable_values_nodes, TRUE);
+          }
+
+          if (isset($fields_enable_values_single[$fields_values_key])) {
+            $fields_enable_values[$fields_values_key] = $fields_enable_values_single[$fields_values_key];
+          }
         }
+
+        //check && remove selected filter option why not exists node
+        if (!empty($filters_values)) {
+          foreach ($filters_values as $filters_values_key => &$filters_values_value) {
+            if (!strpos($filters_values_key, '__to') && !strpos($filters_values_key, '__from')) {
+              $filer_exists_key = '';
+              if (isset($fields_enable_values[$filters_values_key . '_tid'])) {
+                $filer_exists_key = $filters_values_key . '_tid';
+              }
+              elseif (isset($fields_enable_values[$filters_values_key . '_value'])) {
+                $filer_exists_key = $filters_values_key . '_value';
+              }
+              if (empty($filer_exists_key)) {
+                $filters_values_value = 0;
+              }
+              else {
+                foreach ($filters_values_value as $filters_values_value_k => &$filters_values_value_v) {
+                  if (!isset($fields_enable_values[$filer_exists_key][$filters_values_value_v])) {
+                    $filters_values_value_v = 0;
+                  }
+                }
+                $filters_values_value = array_filter($filters_values_value);
+              }
+            }
+          }
+        }
+
         $form_var = drupal_get_form('trade_catalog_filter_form', $fields_values, $filters_values, $fields_enable_values);
         $vars['build']['filter_form'] = array(
           '#markup' => drupal_render($form_var),
