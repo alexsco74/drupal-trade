@@ -446,17 +446,16 @@ function template_preprocess_trade_catalog_pages_catalog_page(&$vars) {
     else {
       $suffix = '';
     }
+    $prefix = '';
+    if (!empty($build['#prefix'])) {
+      $prefix = $build['#prefix'];
+    }
+
     $build = array(
       '#prefix' => '<div class="trade-catalog-page-only-terms-wr">',
-      '#markup' => $build['#prefix'],
+      '#markup' => $prefix,
       '#suffix' => '</div>' . $suffix,
     );
-    // unset($build['description_header'],$build['description_footer'], $build['wr']);
-//    $build['wr']['content']['empty'] = array(
-//      '#prefix' => '<p>',
-//      '#markup' => t('Product not found. Please, change or clear filers.'),
-//      '#suffix' => '</p>',
-//    );
   }
 
   $vars['build'] = $build;
